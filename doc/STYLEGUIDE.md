@@ -1,31 +1,38 @@
-# **Stilrichtlinien für das Python-Projekt**
+# Style Guidelines for the Python Project
 
-| Kategorie | Stil |
+| Category | Style |
 | :---- | :---- |
-| Variablen und Parameter | snake\_case (z.B. user\_name, total\_count) |
-| Funktionen / Methoden | PascalCase (z.B. ComputeResult(), ProcessData()) Ausnahme: Getter/Setter kann auch snake\_case sein |
-| Typen / Klassen / Enums / Aliase | PascalCase (z.B. MyClass, UserProfile) |
-| Konstanten / global sichtbare Konstanten | kPascalCase |
-| Datei-/Modulname | snake\_case  |
+| Variables and Parameters | snake_case (e.g., user_name, total_count) |
+| Functions / Methods | PascalCase (e.g., ComputeResult(), ProcessData()). Exception: getters/setters can also use snake_case |
+| Types / Classes / Enums / Aliases | PascalCase (e.g., MyClass, UserProfile) |
+| Constants / Globally Visible Constants | kPascalCase |
+| File / Module Name | snake_case |
 
-### 
+---
 
-### **Codeorganisation & Struktur**
+## Code Organization & Structure
 
-**Modulare Struktur:** Teile Code in überschaubare Module/Dateien, wobei jedes Modul klar definiert, was es enthält. Vermeide unnötig große Dateien, um Übersichtlichkeit zu wahren. 
+**Modular Structure:**  
+Divide code into manageable modules/files, where each module has a clearly defined content. Avoid unnecessarily large files to maintain readability.
 
-**Logische Gruppierung:** Innerhalb eines Moduls sollten verwandte Elemente (z. B. Klassen, Funktionen, Konstanten) logisch gruppiert sein.
+**Logical Grouping:**  
+Within a module, related elements (e.g., classes, functions, constants) should be grouped logically.
 
-**Eindeutige Schnittstellen:** Für public- bzw. exportierte Funktionen/Klassen sollte klar erkennbar sein, was zur API gehört — und was intern bleibt (z. B. private Helferfunktionen oder Hilfsklassen).
+**Clear Interfaces:**  
+For public/exported functions and classes, it should be clear what belongs to the API and what is internal (e.g., private helper functions or helper classes).
 
-**Minimale Abhängigkeiten:** Jede Datei/Modul soll möglichst nur diejenigen Abhängigkeiten importieren, die tatsächlich gebraucht werden — keine „transitiven Importe“, nur weil eine andere Datei sie evtl. nutzt. Das erhöht die Klarheit und reduziert die Seiteneffekte beim Refactoring.
+**Minimal Dependencies:**  
+Each file/module should import only the dependencies it actually needs — avoid “transitive imports” just because another file might use them. This improves clarity and reduces side effects during refactoring.
 
-### 
+---
 
-### **Kommentare & Dokumentation**
+## Comments & Documentation
 
-**Selbstdokumentierender Code vor überflüssigen Kommentaren.** Gute Namen für Variablen, Funktionen etc. sind oft hilfreicher als lange Kommentare. 
+**Self-documenting code over excessive comments:**  
+Good names for variables, functions, etc., are often more helpful than long comments.
 
-**Kommentare, wo sie Mehrwert bieten:** Besonders bei komplexem Verhalten, unerwarteten Besonderheiten, oder seiteneffektreichen Operationen — dort sollte dokumentiert werden, was der Code tut und warum.
+**Comments where they add value:**  
+Especially for complex behavior, unexpected quirks, or side-effect-heavy operations — document what the code does and why.
 
-**Einheitlicher Kommentarstil:** Wähle eine Art von Kommentaren (\# … für Python) und nutze sie konsistent. Die Kommentare sollten in vollständigen, gut lesbaren Sätzen verfasst sein und die übliche Groß- und Kleinschreibung verwenden.
+**Consistent comment style:**  
+Choose one type of comment (`# …` for Python) and use it consistently. Comments should be written in complete, readable sentences with standard capitalization.
