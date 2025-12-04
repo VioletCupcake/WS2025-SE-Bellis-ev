@@ -1,0 +1,74 @@
+# ------------------------------
+# Python / Django
+# ------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ------------------------------
+# Virtual Environment
+# ------------------------------
+env/
+venv/
+ENV/
+.venv/
+
+# ------------------------------
+# Django Specific
+# ------------------------------
+db.sqlite3
+db.sqlite3-journal
+
+# Media & Static
+/media/
+staticfiles/
+static/
+
+# Local settings
+local_settings.py
+
+# Migrations (optional, but generally should be included)
+# Uncomment to exclude migrations, but usually we commit them
+# */migrations/*.py
+# */migrations/*.pyc
+# */migrations/__pycache__/
+
+# ------------------------------
+# VS Code
+# ------------------------------
+.vscode/
+.settings/
+.python-version
+
+# ------------------------------
+# System Files
+# ------------------------------
+Thumbs.db
+.DS_Store
+*.swp
+*.bak
+*.tmp
+
+# ------------------------------
+# Logs
+# ------------------------------
+*.log
+
+# ------------------------------
+# Node / Frontend (if needed)
+# ------------------------------
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# ------------------------------
+# Environment Files
+# ------------------------------
+.env
