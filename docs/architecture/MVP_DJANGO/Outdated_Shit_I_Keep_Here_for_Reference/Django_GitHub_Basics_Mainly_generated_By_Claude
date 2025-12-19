@@ -1,6 +1,7 @@
 ============================================================================
 ## DJANGO + GITHUB CHEAT SHEET FOR BEGINNERS
 ## SE_B-EV_2025 MVP Backend Development
+## NO i did not write all of this myself, like half of it at best
 ============================================================================
 
 ## WHAT IS DJANGO?
@@ -106,10 +107,10 @@ WS2025-SE-B-ev/                 # Git repo root
 │ │ ├── init.py
 │ │ ├── admin.py        # Admin interface config
 │ │ ├── apps.py         # App configuration
-│ │ ├── models.py       # ⭐ Database models go here
+│ │ ├── models.py       # !!! Database models go here
 │ │ ├── tests.py        # Unit tests
-│ │ └── views.py        # ⭐ Request handlers
-│ ├── manage.py                 # ⭐ Django command-line tool
+│ │ └── views.py        # Request handlers
+│ ├── manage.py                 # Django command-line tool
 │ └── README.md                 # Project setup instructions
 ├── .dockerignore               # Docker build exclusions
 └── .gitignore                  # Git tracking exclusions
@@ -290,77 +291,51 @@ The sidebar has a Source Control tab (looks like a branching diagram).
 Shows changed files, lets you commit without command line.
 
 But learning the command line is better for understanding what's happening!
-COMMON MISTAKES TO AVOID
 
-❌ Editing code directly on main branch
-✓ Always create a feature branch
-
-❌ Forgetting to pull before starting work
-✓ Always git pull when you start working
-
-❌ Committing migration files from your local database experiments
-✓ Only commit migrations that apply to the shared schema
-
-❌ Pushing secrets (passwords, API keys) to GitHub
-✓ Use .env files (in .gitignore) for secrets
-
-❌ Not testing before pushing
-✓ Run python manage.py test and check localhost:8000
-DJANGO COMMANDS YOU'LL USE DAILY
-
-text
+===============
+### DJANGO COMMAND LINES FOR DAILY USE
 # Start development server
 python manage.py runserver
+# Visit http://localhost:8000
+
+# Start server on different port
+python manage.py runserver 8080
 
 # Create new app
-python manage.py startapp reference_data
+python manage.py startapp cases
 
 # Database migrations
-python manage.py makemigrations
-python manage.py migrate
+python manage.py makemigrations          # Generate migration files
+python manage.py makemigrations Core     # For specific app
+python manage.py migrate                 # Apply to database
+python manage.py showmigrations          # See migration status
 
 # Create superuser for admin
 python manage.py createsuperuser
+# Username: admin
+# Email: admin@example.com
+# Password: (will prompt, characters hidden)
 
-# Open Django shell (interactive Python with your models loaded)
+# Open Django shell (interactive Python with models loaded)
 python manage.py shell
+>>> from Core.models import Fall
+>>> Fall.objects.all()
+>>> exit()
 
 # Run tests
-python manage.py test
+python manage.py test                    # All tests
+python manage.py test Core               # Just Core app tests
+python manage.py test Core.tests.FallTestCase  # Specific test class
 
-# Load seed data
+# Check for problems
+python manage.py check
+
+# Load seed data from JSON fixtures
 python manage.py loaddata reference_data/fixtures/gewalttat_art.json
 
-GETTING HELP
+# Create seed data (dump existing data to JSON)
+python manage.py dumpdata reference_data.GewalttatArt --indent 2 > gewalttat_art.json
 
-When stuck:
-
-    Read the error message carefully (Django errors are helpful!)
-
-    Check Django docs: https://docs.djangoproject.com/
-
-    Search the error on Stack Overflow
-
-    Ask the team in your chat/Discord
-
-    Use python manage.py shell to test code interactively
-
-NEXT STEPS
-
-    Clone the repo
-
-    Set up virtual environment: python -m venv venv
-
-    Activate it: source venv/bin/activate (Mac/Linux) or venv\Scripts\activate (Windows)
-
-    Install dependencies: pip install -r requirements.txt
-
-    Run migrations: python manage.py migrate
-
-    Create superuser: python manage.py createsuperuser
-
-    Start server: python manage.py runserver
-
-    Visit http://localhost:8000/admin and log in!
-
-You're ready to code!
+# Database shell (raw SQL)
+python manage.py dbshell
+# Opens psql connected to your database

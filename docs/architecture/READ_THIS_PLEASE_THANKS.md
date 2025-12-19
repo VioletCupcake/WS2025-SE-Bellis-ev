@@ -11,8 +11,7 @@
 ##
 ## SO WHAT IS WHERE?
 ## - I have organised this whole shit into 3 Seperate folders
-## - Each Folder contains:  - A clean, full UML Document with minimal code
-##                          - Well commented thematic groups which include explanations and reasonings (No i did not write all of that myself, but some)
+## - Each Folder contains:  - A clean, full UML Document with minimal comments
 ##                          - Visualisation by converting these Things into PlantUML syntax and generating images
 ## The Folders:
 ## 1)   Full UML - here you have a full UML, with everything the program should needs
