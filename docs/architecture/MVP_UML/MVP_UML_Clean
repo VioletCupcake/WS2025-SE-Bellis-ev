@@ -1,0 +1,292 @@
+============================================================================
+## SE_B-EV_2025 – MVP UML CLASS DIAGRAM
+## Minimum Viable Product - Core Functionality Only
+============================================================================
+## LANGUAGE STRATEGY 
+## Domain entities/attributes: German (Beratung, Gewalttat, etc.)
+## Technical components/methods: English (User, save(), etc.)
+## Classes: PascalCase | Attributes: snake_case | Methods: camelCase
+============================================================================
+
+============================================================================
+## 01 USER & PERMISSION SYSTEM
+============================================================================
+## Three-tier role-based access control with session management.
+
+## User
+## System user (B-EV employee) with role-based permissions.
+User:
+- user_id : string  ## PK
+- username : string
+- email : string
+- password_hash : string  ## Never plaintext
+- role_id : string  ## FK → Role
+- is_active : boolean  ## Soft delete
+- created_at : datetime
++ login(username: string, password: string) : Session
++ logout(session_id: string) : void
++ changePassword(old_password: string, new_password: string) : boolean
+
+## Session
+## Active user session with timeout tracking.
+Session:
+- session_id : string  ## PK
+- user_id : string  ## FK → User
+- start_time : datetime
+- last_activity : datetime
+- is_active : boolean
++ extend() : void
++ terminate() : void
+
+## Role
+## Fixed permission tier. Three roles: BASIS, ERWEITERT, ADMINISTRATOR.
+Role:
+- role_id : string  ## PK
+- name : enum<BASIS, ERWEITERT, ADMINISTRATOR>
+- description : text
++ isAuthorized(permission: string) : boolean
+
+## PermissionSet
+## Permission flags mapped 1:1 to Role.
+PermissionSet:
+- permission_set_id : string  ## PK
+- role_id : string  ## FK → Role (1:1)
+- can_view_cases : boolean
+- can_edit_cases : boolean
+- can_delete_cases : boolean
+- can_manage_reference_data : boolean  ## ERWEITERT can edit GewalttatArt/FolgenDerGewalt
+- can_manage_users : boolean  ## ADMINISTRATOR only
+- can_assign_roles : boolean  ## ADMINISTRATOR only
++ validate() : boolean
+
+============================================================================
+## 02 CASE MANAGEMENT
+============================================================================
+## Core case entities with demographic data and nested counseling/violence tracking.
+
+## Fall
+## Core case record with manual alias and nested data tracking.
+Fall:
+- fall_id : string  ## PK
+- alias : string  ## UNIQUE, manually entered pseudonym
+- personenbezogene_daten_id : string  ## FK → PersonenbezogeneDaten (1:1)
+- zustaendige_beratungsstelle : enum  ## Leipzig Stadt / Leipzig Land / Nordsachsen
+- erstellungsdatum : date
+- letzte_bearbeitung : date
+- bearbeitet_von : string  ## FK → User
+- status : enum<AKTIV, ARCHIVIERT>
+- ist_vollstaendig : boolean
+- ist_abgeschlossen : boolean
+- abschlussdatum : datetime
+- beratungsanzahl : int  ## Aggregate count
+- letzte_beratung : date
+- informationsquelle : enum  ## Polizei / Kontakte / Internet / Ämter / andere
+- informationsquelle_andere : text
+- anzahl_dolmetschungen_stunden : float
+- dolmetschung_sprachen : text
+- weitere_notizen : text
++ save()
++ edit(updates)
++ close()
++ searchByAlias(alias: string) : Fall
++ searchByDate(from: date, to: date) : List<Fall>
+
+## PersonenbezogeneDaten
+## Demographic data separated for privacy. 1:1 with Fall, CASCADE on delete.
+PersonenbezogeneDaten:
+- personenbezogene_daten_id : string  ## PK
+- fall_id : string  ## FK → Fall (1:1)
+- rolle_der_ratsuchenden_person : enum  ## Betroffene:r / Angehörige:r / Fachkraft
+- alter : int  ## Nullable
+- alter_keine_angabe : boolean
+- geschlechtsidentitaet : enum  ## cis w/m, trans w/m, nb, inter, agender, divers, keine Angabe
+- sexualitaet : enum  ## lesbisch, schwul, bi, asexuell, hetero, keine Angabe
+- wohnort : enum  ## Leipzig / Nordsachsen / Sachsen / Deutschland / andere / keine Angabe
+- wohnort_details : text
+- staatsangehoerigkeit_deutsch : boolean
+- staatsangehoerigkeit_land : string
+- berufliche_situation : enum  ## arbeitslos, studierend, berufstätig, etc.
+- schwerbehinderung : boolean
+- form_der_behinderung : enum  ## kognitiv / körperlich
+- grad_der_behinderung : int
+- weitere_notizen : text
++ save()
++ edit(updates)
+
+## Beratung
+## Individual counseling session record.
+Beratung:
+- beratung_id : string  ## PK
+- fall_id : string  ## FK → Fall
+- datum : date
+- durchfuehrungsart : enum  ## persönlich / video / telefon / aufsuchend / schriftlich
+- durchfuehrungsort : enum  ## Leipzig Stadt / Leipzig Land / Nordsachsen
+- weitere_notizen : text
++ save()
+
+## Gewalttat
+## Violence incident with JSON perpetrator data. Multi-select violence types via junction.
+Gewalttat:
+- gewalttat_id : string  ## PK
+- fall_id : string  ## FK → Fall
+- alter_zum_zeitpunkt_der_tat : int
+- alter_keine_angabe : boolean
+- zeitraum_von : date
+- zeitraum_bis : date
+- zeitraum_keine_angabe : boolean
+- zahl_der_vorfaelle : enum  ## einmalig / mehrere / genaue Zahl / keine Angabe
+- zahl_der_vorfaelle_genau : int
+- anzahl_taeterinnen : enum  ## 1 / mehrere / genaue Zahl / keine Angabe
+- anzahl_taeterinnen_genau : int
+- taeterinnen_details : json  ## [{geschlecht, verhaeltnis}, ...]
+- tatort : enum  ## Leipzig / Nordsachsen / Sachsen / Deutschland / Ausland / keine Angabe
+- anzeige : enum  ## Ja / Nein / noch nicht entschieden / keine Angabe
+- medizinische_versorgung : enum  ## Ja / Nein / keine Angabe
+- vertrauliche_spurensicherung : enum  ## Ja / Nein / keine Angabe
+- mitbetroffene_kinder : int
+- davon_direkt_betroffen : int
+- weitere_notizen : text
++ save()
++ addTaeterIn(geschlecht: string, verhaeltnis: string)  ## Appends to JSON
+
+============================================================================
+## 03 REFERENCE DATA
+============================================================================
+## Hierarchical lookup tables for violence types and consequences. Seeded at deployment.
+
+## GewalttatArt
+## Hierarchical reference for violence types. ERWEITERT role can add entries.
+GewalttatArt:
+- art_id : string  ## PK
+- name : string
+- ist_unterkategorie : boolean
+- hauptkategorie_id : string  ## FK → GewalttatArt (self-reference)
+- beschreibung : text
++ save()
+
+## Gewalttat_GewalttatArt
+## Junction for multi-select violence types per incident.
+Gewalttat_GewalttatArt:
+- gewalttat_id : string  ## FK → Gewalttat
+- art_id : string  ## FK → GewalttatArt
+- andere_details : text  ## Free text for "Andere"
++ save()
+
+## FolgenDerGewalt
+## Hierarchical reference for consequence types.
+FolgenDerGewalt:
+- folge_id : string  ## PK
+- name : string
+- kategorie : enum  ## PSYCHISCH / KOERPERLICH / DAUERHAFT / FINANZIELL / etc.
+- ist_unterkategorie : boolean
+- hauptkategorie_id : string  ## FK → FolgenDerGewalt (self-reference)
+- beschreibung : text
++ save()
+
+## Fall_FolgenDerGewalt
+## Junction for many-to-many Fall ↔ FolgenDerGewalt with optional details.
+Fall_FolgenDerGewalt:
+- fall_id : string  ## FK → Fall
+- folge_id : string  ## FK → FolgenDerGewalt
+- weitere_informationen : text  ## Free text details
++ save()
+
+============================================================================
+## 04 VALIDATION SYSTEM
+============================================================================
+## Pre-save validation for format and type checking.
+
+## <<service>> ValidationService
+## Validates raw user input before entity creation.
+<<service>> ValidationService:
++ validateInput(input_data: Map<string, any>, field_name: string, field_type: string) : ValidationResult
++ validatePassword(password: string) : boolean
++ validateDate(date_string: string) : boolean
++ validateNumber(number_string: string) : boolean
++ validateEnum(value: string, allowed_values: List<string>) : boolean
+
+## ValidationResult
+## Transient validation result container.
+ValidationResult:
+- is_valid : boolean
+- error_messages : List<string>
++ addError(error: string) : void
++ getSummary() : string
+
+============================================================================
+## 05 MANAGER CLASSES
+============================================================================
+## Service layer coordinators for business logic.
+
+## <<manager>> FallManager
+## Coordinates Fall lifecycle. Creates PersonenbezogeneDaten, manages nested entities.
+<<manager>> FallManager:
++ createFall(data: Map<string, any>) : Fall  ## Creates Fall + PersonenbezogeneDaten atomically
++ updateFall(fall_id: string, data: Map<string, any>) : Fall
++ deleteFall(fall_id: string) : void  ## Soft delete (status=ARCHIVIERT)
++ addBeratung(fall_id: string, data: Map<string, any>) : Beratung
++ addGewalttat(fall_id: string, data: Map<string, any>) : Gewalttat
++ closeFall(fall_id: string) : void  ## Sets ist_abgeschlossen, abschlussdatum
++ searchByAlias(alias: string) : Fall
++ searchByDateRange(from: date, to: date) : List<Fall>
+
+## <<manager>> SessionManager
+## Manages active user sessions.
+<<manager>> SessionManager:
+- active_sessions : Map<session_id, Session>
++ createSession(user: User) : Session
++ destroySession(session_id: string) : void
++ validateSession(session_id: string) : boolean
++ cleanupExpired() : int
+
+============================================================================
+## 06 INFRASTRUCTURE
+============================================================================
+## Application configuration.
+
+## AppConfiguration
+## Application settings from environment variables.
+AppConfiguration:
+- database_url : string
+- secret_key : string  ## For password hashing
+- session_timeout : int  ## Minutes
++ load() : AppConfiguration
++ validate() : boolean
+
+============================================================================
+## 07 RELATIONSHIP DEFINITIONS
+============================================================================
+
+## ONE-TO-ONE
+Fall 1 ---- 1 PersonenbezogeneDaten  ## CASCADE DELETE
+
+## ONE-TO-MANY (CASCADE DELETE)
+User 1 ---- * Session  ## CASCADE
+User 1 ---- * Fall  ## SET NULL on User deactivation
+Role 1 ---- * User  ## RESTRICT
+Role 1 ---- 1 PermissionSet  ## RESTRICT
+Fall 1 ---- * Beratung  ## CASCADE
+Fall 1 ---- * Gewalttat  ## CASCADE
+Fall 1 ---- * Fall_FolgenDerGewalt  ## CASCADE
+Gewalttat 1 ---- * Gewalttat_GewalttatArt  ## CASCADE
+
+## SELF-REFERENTIAL (NO CASCADE)
+GewalttatArt 1 ---- * GewalttatArt  ## hauptkategorie_id
+FolgenDerGewalt 1 ---- * FolgenDerGewalt  ## hauptkategorie_id
+
+## MANY-TO-MANY (VIA JUNCTION)
+Gewalttat * ---- * GewalttatArt  ## via Gewalttat_GewalttatArt
+Fall * ---- * FolgenDerGewalt  ## via Fall_FolgenDerGewalt
+
+## MANAGER DEPENDENCIES
+FallManager ..> Fall : manages
+FallManager ..> PersonenbezogeneDaten : creates
+FallManager ..> Beratung : manages
+FallManager ..> Gewalttat : manages
+FallManager ..> ValidationService : validates
+SessionManager ..> Session : manages
+SessionManager ..> User : authenticates
+
+============================================================================
+## END OF MVP UML CLASS DIAGRAM
+============================================================================

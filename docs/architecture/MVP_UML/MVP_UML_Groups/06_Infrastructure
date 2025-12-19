@@ -1,0 +1,33 @@
+============================================================================
+## 06 INFRASTRUCTURE
+============================================================================
+## What it does: App-wide configuration settings.
+## MVP scope: Minimal - just database connection and secret key.
+## Why it matters: Centralizes environment-specific settings.
+============================================================================
+
+## AppConfiguration
+## Loads from environment variables or .env file. Not really a database
+## table, more like a settings object.
+AppConfiguration:
+- database_url : string  ## PostgreSQL connection string
+- secret_key : string  ## For password hashing and session tokens
+- session_timeout : int  ## Minutes until auto-logout (default 30)
++ load() : AppConfiguration  ## Read from environment
++ validate() : boolean  ## Check required settings are present
+
+## MVP Usage:
+## config = AppConfiguration.load()
+## if not config.validate():
+##     print("ERROR: Missing required environment variables")
+##     exit(1)
+##
+## Django integration: This maps to Django's settings.py structure.
+## database_url → DATABASES config
+## secret_key → SECRET_KEY
+## session_timeout → SESSION_COOKIE_AGE
+
+## MVP Environment Variables Required:
+## DATABASE_URL=postgresql://user:pass@localhost:5432/bev_mvp
+## SECRET_KEY=long_random_string_here
+## SESSION_TIMEOUT=30

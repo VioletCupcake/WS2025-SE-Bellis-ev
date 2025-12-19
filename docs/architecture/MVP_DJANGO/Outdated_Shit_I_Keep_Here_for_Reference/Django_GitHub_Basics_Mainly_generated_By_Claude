@@ -1,0 +1,366 @@
+============================================================================
+## DJANGO + GITHUB CHEAT SHEET FOR BEGINNERS
+## SE_B-EV_2025 MVP Backend Development
+============================================================================
+
+## WHAT IS DJANGO?
+Django is a Python web framework - basically a toolkit that handles the boring,
+repetitive parts of building a web application so you can focus on the actual
+B-EV case management logic.
+
+Think of it like this:
+- You want to build a house (your app)
+- Django gives you pre-built walls, doors, plumbing (user login, database 
+  connections, forms, admin interface)
+- You just arrange them and add your custom stuff (case management, statistics)
+
+## WHY DJANGO FOR THIS PROJECT?
+✓ Built-in user authentication (we need login + 3 roles)
+✓ Built-in admin interface (free UI for managing data while we build the real one)
+✓ ORM (Object-Relational Mapping) - write Python instead of SQL
+✓ Form handling with validation (we have lots of forms)
+✓ Security features built-in (password hashing, CSRF protection)
+
+## KEY DJANGO CONCEPTS
+
+### Models (Your Database Tables)
+Models are Python classes that become database tables automatically.
+
+Example from our UML:
+
+class Fall(models.Model):
+fall_id = models.UUIDField(primary_key=True)
+alias = models.CharField(max_length=50, unique=True)
+status = models.CharField(max_length=20, choices=[('AKTIV', 'Aktiv'),
+('ARCHIVIERT', 'Archiviert')])
+
+
+Django reads this and creates a PostgreSQL table called "fall" with those columns.
+You never write CREATE TABLE statements yourself!
+
+### Views (Your Business Logic)
+Views are functions that handle web requests. When someone clicks "Create Case",
+a view function runs.
+
+    def create_fall(request):
+    if request.method == 'POST':
+    # User submitted the form
+    data = request.POST
+    fall = FallManager.createFall(data) # Our manager from UML
+    return redirect('case_detail', fall_id=fall.fall_id)
+    else:
+    # Show empty form
+    return render(request, 'create_fall.html')
+
+
+### URLs (Routing)
+URLs map web addresses to view functions.
+
+    urlpatterns = [
+    path('cases/create/', create_fall, name='create_fall'),
+    path('cases/uuid:fall_id/', case_detail, name='case_detail'),
+    ]
+
+Now when user visits `http://localhost:8000/cases/create/`, Django calls 
+create_fall() function.
+
+### Templates (Your HTML)
+HTML files with Django template tags for dynamic content.
+
+    <h1>Fall: {{ fall.alias }}</h1> <p>Status: {{ fall.status }}</p> ```
+
+    Django fills in {{ fall.alias }} with actual data from database.
+
+================================================================================
+### Migrations
+
+When you create/change models, Django generates migration files that update
+the database schema.
+
+    python manage.py makemigrations  # Creates migration file
+    python manage.py migrate         # Applies it to database
+
+### DJANGO PROJECT STRUCTURE
+
+WS2025-SE-B-ev/                 # Git repo root
+├── .github/                    # GitHub Actions (for CI/CD configs if we do them)
+├── docs/                       # Project documentation
+│ ├── architecture/             # UML diagrams, design docs
+│ │ ├── FULL_UML/               # Complete system UML
+│ │ ├── MVP_UML/                # MVP-scoped UML
+│ │ └── DJANGO_MVP/             # Django implementation guides
+│ │ └── Cheatsheets_and_Tips/   # This document goes here!
+│ ├── team_documentation/       # Internal team docs
+│ └── user_documentation/       # End-user guides
+├── src/                    # Source code root
+│ ├── B_EV/                 # Django PROJECT folder (settings/config)
+│ │ ├── pycache/            # Python bytecode (ignored by git)
+│ │ ├── init.py             # Makes this a Python package
+│ │ ├── asgi.py             # ASGI config (async server)
+│ │ ├── settings.py         # !!!!! Main configuration file !!!!!
+│ │ ├── urls.py             # !!!!! Main URL routing !!!!
+│ │ └── wsgi.py             # WSGI config (standard server)
+│ ├── Core/             # Django APP (first app created)
+│ │ ├── migrations/     # Database schema versions
+│ │ │ └── init.py
+│ │ ├── init.py
+│ │ ├── admin.py        # Admin interface config
+│ │ ├── apps.py         # App configuration
+│ │ ├── models.py       # ⭐ Database models go here
+│ │ ├── tests.py        # Unit tests
+│ │ └── views.py        # ⭐ Request handlers
+│ ├── manage.py                 # ⭐ Django command-line tool
+│ └── README.md                 # Project setup instructions
+├── .dockerignore               # Docker build exclusions
+└── .gitignore                  # Git tracking exclusions
+
+
+
+
+### WHAT IS GITHUB?
+
+GitHub is a website that stores your code online and helps teams collaborate.
+Like Google Drive but for code and also less shit.
+
+### KEY GITHUB CONCEPTS
+## Repository (Repo)
+The project folder stored on GitHub. Ours is
+https://github.com/VioletCupcake/WS2025-SE-Bellis-ev/
+
+## Clone
+Copying the repo from GitHub to your computer the first time.
+
+git clone https://github.com/VioletCupcake/WS2025-SE-Bellis-ev/
+cd WS2025-SE-Bellis-ev
+
+Now you have the full project on your laptop. And navigated there. Yay. You can also do this in VS code via the terminal.
+
+## Branch
+A separate version of the code where you work on a feature without breaking
+the main code. So basically you do branches for each large new feature you work on. Eventually you can merge them.
+Current Branch Structure:
+
+    main - Stable, working code (protected, requires pull requests)
+
+    cleanup - My currently active deployment branch (Which u probably pushed by now)
+
+    Feature branches - Your individual work (e.g., feature/add-beratung-model)
+
+
+## Branch Workflow:
+
+## OPTION 1 Branch from Branch
+# Make sure you're on cleanup branch
+git checkout cleanup
+# Pull latest changes, just to be sure
+git pull origin cleanup
+# Create feature branch FROM cleanup
+git checkout -b feature/add-beratung-model
+# Now i'm on your feature branch, working here!
+
+## OPTION 2 - Branch from Main 
+ # Youre currently on main, so create new branch (also creates feature if feature doesnt exist yet)
+git branch feature/add-gewalttat-model  
+# Switch to it
+git checkout feature/add-gewalttat-model 
+# Or do both at once:
+git checkout -b feature/add-gewalttat-model
+
+## Commit
+
+Saving your changes with a description.
+
+# Stage files
+git add src/Core/models.py
+git add src/Core/admin.py
+# Commit with message
+git commit -m "Add Beratung model with ForeignKey to Fall"
+# You can always go back from commits
+
+## Push
+Is Uploading your commits from your computer to GitHub.
+
+# Push your feature branch
+git push origin feature/add-beratung-model
+Now your teammates can see your changes on GitHub.
+
+
+## Pull
+
+Downloading changes from GitHub to your computer.
+# Switch to main branch
+git checkout main                
+# Get latest changes
+git pull origin main             
+# Do this at the start of each work session to stay up-to-date.
+
+Pull Request (PR)
+
+Asking to merge your feature branch into cleanup branch. Our team can review it first before they approve it.
+
+Process:
+
+    Push your feature branch: git push origin feature/my-feature
+
+    Go to GitHub: https://github.com/VXXXXtCXXXXXke/WS2025-SE-B-ev/pulls
+
+    Click "New Pull Request"
+
+    Base: cleanup ← Compare: feature/my-feature
+
+    Write description: what you changed, why, how to test
+
+    Assign reviewer (teammate)
+
+    Wait for review and approval
+
+    Reviewer clicks "Merge" when approved
+
+
+### TYPICAL WORKFLOW
+
+## Starting work:
+
+cd ~/WS2025-SE-B-ev  # Go to project directory
+git checkout cleanup  # Switch to cleanup branch
+git pull origin cleanup  # Get latest changes from team
+# Create your feature branch
+git checkout -b feature/implement-gewalttat-model
+# Activate Python virtual environment
+cd src
+source ../venv/bin/activate  # macOS/Linux
+# or
+..\venv\Scripts\activate     # Windows
+
+## While working:
+# Make changes in VSCode
+# Test your changes
+python manage.py runserver  # Visit http://localhost:8000
+# Stage and commit frequently (every logical change)
+git add src/Core/models.py
+git commit -m "Add Gewalttat model with JSONField for taeterinnen_details"
+git add src/Core/admin.py
+git commit -m "Register Gewalttat in admin interface"
+
+
+## Finishing the task:
+# Push your branch
+git push origin feature/implement-gewalttat-model
+# Go to GitHub and create Pull Request
+# Target: cleanup branch (not main!)
+
+
+## After your PR is merged:
+git checkout cleanup
+git pull origin cleanup  # Get your merged changes
+git branch -d feature/implement-gewalttat-model  # Delete old branch
+
+==================================================================
+### VSCODE SETUP
+## Essential Extensions
+
+Install these (Ctrl+Shift+X to open extensions):
+
+    Python (by Microsoft) - Python language support, linting
+
+    Pylance (by Microsoft) - Fast Python IntelliSense
+
+    Django (by Baptiste Darthenay) - Django template syntax highlighting
+
+    GitLens (by GitKraken) - Advanced Git features, blame annotations
+
+    PostgreSQL (by Chris Kolkman) - SQL syntax highlighting
+
+    Better Comments (by Aaron Bond) - Color-coded comments
+
+
+## Useful Shortcuts
+
+    Ctrl + Shift + P - Command palette (search for any VSCode command)
+
+    `Ctrl + `` - Toggle terminal
+
+    Ctrl + P - Quick file search
+
+    F5 - Start debugger
+
+Git in VSCode
+
+The sidebar has a Source Control tab (looks like a branching diagram).
+Shows changed files, lets you commit without command line.
+
+But learning the command line is better for understanding what's happening!
+COMMON MISTAKES TO AVOID
+
+❌ Editing code directly on main branch
+✓ Always create a feature branch
+
+❌ Forgetting to pull before starting work
+✓ Always git pull when you start working
+
+❌ Committing migration files from your local database experiments
+✓ Only commit migrations that apply to the shared schema
+
+❌ Pushing secrets (passwords, API keys) to GitHub
+✓ Use .env files (in .gitignore) for secrets
+
+❌ Not testing before pushing
+✓ Run python manage.py test and check localhost:8000
+DJANGO COMMANDS YOU'LL USE DAILY
+
+text
+# Start development server
+python manage.py runserver
+
+# Create new app
+python manage.py startapp reference_data
+
+# Database migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Create superuser for admin
+python manage.py createsuperuser
+
+# Open Django shell (interactive Python with your models loaded)
+python manage.py shell
+
+# Run tests
+python manage.py test
+
+# Load seed data
+python manage.py loaddata reference_data/fixtures/gewalttat_art.json
+
+GETTING HELP
+
+When stuck:
+
+    Read the error message carefully (Django errors are helpful!)
+
+    Check Django docs: https://docs.djangoproject.com/
+
+    Search the error on Stack Overflow
+
+    Ask the team in your chat/Discord
+
+    Use python manage.py shell to test code interactively
+
+NEXT STEPS
+
+    Clone the repo
+
+    Set up virtual environment: python -m venv venv
+
+    Activate it: source venv/bin/activate (Mac/Linux) or venv\Scripts\activate (Windows)
+
+    Install dependencies: pip install -r requirements.txt
+
+    Run migrations: python manage.py migrate
+
+    Create superuser: python manage.py createsuperuser
+
+    Start server: python manage.py runserver
+
+    Visit http://localhost:8000/admin and log in!
+
+You're ready to code!

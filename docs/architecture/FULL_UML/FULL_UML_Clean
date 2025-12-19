@@ -1,0 +1,619 @@
+============================================================================
+## SE_B-EV_2025 – UML CLASS DIAGRAM
+## Complete System Architecture
+============================================================================
+## LANGUAGE STRATEGY 
+## Domain entities/attributes: German (Beratung, Gewalttat, etc.)
+## Technical components/methods: English (User, save(), etc.)
+## Classes: PascalCase | Attributes: snake_case | Methods: camelCase
+============================================================================
+
+============================================================================
+## 01 NAMING CONVENTIONS
+============================================================================
+## Defines naming strategy for consistent bilingual architecture across 
+## domain and technical layers.
+
+## EXAMPLE ENTITY STRUCTURE:
+Fall:  ## German domain entity 
+- fall_id : string  ## PK
+- erstellungsdatum : date 
++ save() : boolean  ## English method 
++ addConsultation() : Beratung
+
+============================================================================
+## 02 USER & PERMISSION SYSTEM
+============================================================================
+## Manages authentication, authorization, and three-tier role-based access 
+## control (BASIS, ERWEITERT, ADMINISTRATOR).
+
+## User
+## System user representing B-EV employee with role-based permissions.
+User:
+- user_id : string  ## PK
+- username : string
+- email : string
+- password_hash : string  ## Never plaintext
+- role_id : string  ## FK → Role
+- is_active : boolean  ## Soft delete flag
+- created_at : datetime
++ login(username: string, password: string) : Session
++ logout(session_id: string) : void
++ changePassword(old_password: string, new_password: string) : boolean
+
+## Session
+## Active user session with timeout tracking for authentication state.
+Session:
+- session_id : string  ## PK
+- user_id : string  ## FK → User
+- start_time : datetime
+- last_activity : datetime
+- is_active : boolean
++ extend() : void
++ terminate() : void
+
+## Role
+## Fixed permission tier. Three roles seeded at deployment.
+Role:
+- role_id : string  ## PK
+- name : enum<BASIS, ERWEITERT, ADMINISTRATOR>
+- description : text
++ isAuthorized(permission: string) : boolean
+
+## PermissionSet
+## Permission flags mapped 1:1 to Role. Boolean pattern for fixed scope.
+PermissionSet:
+- permission_set_id : string  ## PK
+- role_id : string  ## FK → Role (1:1)
+- can_view_requests : boolean
+- can_edit_requests : boolean
+- can_view_cases : boolean
+- can_edit_cases : boolean
+- can_create_presets : boolean
+- can_share_presets : boolean
+- can_customize_forms : boolean
+- can_manage_users : boolean
+- can_assign_roles : boolean
++ validate() : boolean
+
+============================================================================
+## 03 PRIMARY CASE ENTITIES
+============================================================================
+## Core domain entities for request intake (Anfrage), case management (Fall), 
+## and demographic data (PersonenbezogeneDaten).
+
+## Anfrage
+## Initial contact record with appointment tracking and Statistik-Bogen fields.
+Anfrage:
+- anfrage_id : string  ## PK
+- datum_eingang : date
+- anfrageweg : enum  ## EMAIL / TELEFON / PERSOENLICH / ONLINE
+- anfrage_aus : enum  ## Leipzig Stadt / Land / Nordsachsen / Sachsen / andere
+- anfrage_aus_details : string
+- wer_hat_angefragt : enum  ## F, A, B, anonym, qB, qF, qA, etc.
+- art_der_anfrage : enum  ## Soforthilfe / Spurensicherung / Beratung / Rechtliches / Sonstiges
+- art_der_anfrage_sonstiges : text
+- termin_vergeben : boolean
+- termin_datum : date  ## Nullable
+- termin_ort : enum  ## Leipzig Stadt / Land / Nordsachsen
+- mitarbeiter_id : string  ## FK → User
+- status : enum<OFFEN, IN_BEARBEITUNG, ABGESCHLOSSEN>
+- ist_vollstaendig : boolean
+- letzte_aktivitaet : datetime
++ save()
++ edit(updates)
++ searchByDate(from, to)
++ searchByText(text)
++ calculateWaitTime() : int  ## Days from eingang to termin
+
+## PersonenbezogeneDaten
+## Demographic data separated for privacy. 1:1 with Fall, CASCADE on delete.
+PersonenbezogeneDaten:
+- personenbezogene_daten_id : string  ## PK
+- fall_id : string  ## FK → Fall (1:1)
+- rolle_der_ratsuchenden_person : enum  ## Betroffene:r / Angehörige:r / Fachkraft
+- alter : int  ## Nullable
+- alter_keine_angabe : boolean
+- geschlechtsidentitaet : enum  ## cis w/m, trans w/m, nb, inter, agender, divers, keine Angabe
+- sexualitaet : enum  ## lesbisch, schwul, bi, asexuell, hetero, keine Angabe
+- wohnort : enum  ## Leipzig / Nordsachsen / Sachsen / Deutschland / andere / keine Angabe
+- wohnort_details : text
+- staatsangehoerigkeit_deutsch : boolean
+- staatsangehoerigkeit_land : string
+- berufliche_situation : enum  ## arbeitslos, studierend, berufstätig, etc.
+- schwerbehinderung : boolean
+- form_der_behinderung : enum  ## kognitiv / körperlich
+- grad_der_behinderung : int
+- weitere_notizen : text
++ save()
++ edit(updates)
+
+## Fall
+## Core case record with alias, nested data tracking, and 6-month retention.
+Fall:
+- fall_id : string  ## PK
+- alias : string  ## UNIQUE pseudonym
+- personenbezogene_daten_id : string  ## FK → PersonenbezogeneDaten (1:1)
+- zustaendige_beratungsstelle : enum  ## Drei Bellis e.V. locations
+- erstellungsdatum : date
+- letzte_bearbeitung : date
+- bearbeitet_von : string  ## FK → User
+- status : enum<AKTIV, ARCHIVIERT, GELOESCHT>
+- ist_vollstaendig : boolean
+- ist_abgeschlossen : boolean
+- abschlussdatum : datetime
+- loeschdatum : datetime  ## abschlussdatum + 180 days
+- beratungsanzahl : int  ## Aggregate count
+- letzte_beratung : date
+- anzahl_begleitungen_insgesamt : int  ## Aggregate count
+- anzahl_verweise_insgesamt : int  ## Aggregate count
+- informationsquelle : enum  ## Polizei, Kontakte, Internet, Ämter, etc.
+- informationsquelle_andere : text
+- anzahl_dolmetschungen_stunden : float
+- dolmetschung_sprachen : text
+- weitere_notizen : text
++ save()
++ edit(updates)
++ close()
++ addConsultation() : Beratung
++ addGewalttat() : Gewalttat
++ addBegleitung() : Begleitung
++ addVerweis() : Verweis
++ searchByDate(from, to)
++ searchByText(text)
+
+============================================================================
+## 04 NESTED CASE STRUCTURE
+============================================================================
+## Child entities of Fall: counseling sessions (Beratung), violence incidents 
+## (Gewalttat), reference data (GewalttatArt, FolgenDerGewalt), and tracking 
+## entities (Begleitung, Verweis).
+
+## Beratung
+## Individual counseling session with execution details.
+Beratung:
+- beratung_id : string  ## PK
+- fall_id : string  ## FK → Fall
+- datum : date
+- durchfuehrungsart : enum  ## persönlich / video / telefon / aufsuchend / schriftlich
+- durchfuehrungsort : enum  ## Leipzig Stadt / Land / Nordsachsen
+- weitere_notizen : text
++ save()
+
+## Gewalttat
+## Violence incident with JSON perpetrator data. Multi-select violence types via junction.
+Gewalttat:
+- gewalttat_id : string  ## PK
+- fall_id : string  ## FK → Fall
+- alter_zum_zeitpunkt_der_tat : int
+- alter_keine_angabe : boolean
+- zeitraum_von : date
+- zeitraum_bis : date
+- zeitraum_keine_angabe : boolean
+- zahl_der_vorfaelle : enum  ## einmalig / mehrere / genaue Zahl / keine Angabe
+- zahl_der_vorfaelle_genau : int
+- anzahl_taeterinnen : enum  ## 1 / mehrere / genaue Zahl / keine Angabe
+- anzahl_taeterinnen_genau : int
+- taeterinnen_details : json  ## [{geschlecht, verhaeltnis}, ...]
+- tatort : enum  ## Leipzig / Nordsachsen / Sachsen / Deutschland / Ausland / Flucht / keine Angabe
+- anzeige : enum  ## Ja / Nein / noch nicht entschieden / keine Angabe
+- medizinische_versorgung : enum  ## Ja / Nein / keine Angabe
+- vertrauliche_spurensicherung : enum  ## Ja / Nein / keine Angabe
+- mitbetroffene_kinder : int
+- davon_direkt_betroffen : int
+- weitere_notizen : text
++ save()
++ addTaeterIn(geschlecht, verhaeltnis)
+
+## GewalttatArt
+## Hierarchical reference data for violence types. Seeded at deployment.
+GewalttatArt:
+- art_id : string  ## PK
+- name : string
+- ist_unterkategorie : boolean
+- hauptkategorie_id : string  ## FK → GewalttatArt (self-reference)
+- beschreibung : text
+
+## Gewalttat_GewalttatArt
+## Junction for multi-select violence types per incident.
+Gewalttat_GewalttatArt:
+- gewalttat_id : string  ## FK → Gewalttat
+- art_id : string  ## FK → GewalttatArt
+- andere_details : text  ## Free text for "Andere"
++ save()
+
+## FolgenDerGewalt
+## Hierarchical reference data for consequence types. Categorized.
+FolgenDerGewalt:
+- folge_id : string  ## PK
+- name : string
+- kategorie : enum  ## PSYCHISCH / KOERPERLICH / DAUERHAFT / FINANZIELL / etc.
+- ist_unterkategorie : boolean
+- hauptkategorie_id : string  ## FK → FolgenDerGewalt (self-reference)
+- beschreibung : text
+
+## Fall_FolgenDerGewalt
+## Junction for many-to-many Fall ↔ FolgenDerGewalt with optional details.
+Fall_FolgenDerGewalt:
+- fall_id : string  ## FK → Fall
+- folge_id : string  ## FK → FolgenDerGewalt
+- weitere_informationen : text  ## Free text details
++ save()
+
+## Begleitung
+## Accompaniment to external institution. Multiple per Fall.
+Begleitung:
+- begleitung_id : string  ## PK
+- fall_id : string  ## FK → Fall
+- institution : enum  ## Gerichte / Polizei / Rechtsanwälte / Ärzte / Jugendamt / etc.
+- institution_sonstige : text
+- datum : date
+- notizen : text
++ save()
+
+## Verweis
+## Referral to external institution. Same categorization as Begleitung.
+Verweis:
+- verweis_id : string  ## PK
+- fall_id : string  ## FK → Fall
+- institution : enum  ## Same as Begleitung
+- institution_sonstige : text
+- datum : date
+- notizen : text
++ save()
+
+============================================================================
+## 05 FORM MANAGEMENT SYSTEM
+============================================================================
+## User-extensible forms (ERWEITERT role). Versioned templates, custom fields, 
+## polymorphic value storage.
+
+## FormularTemplate
+## Form structure version. Only one active version per template name.
+FormularTemplate:
+- template_id : string  ## PK
+- name : string  ## e.g., "Anfrage-Formular"
+- version : int
+- is_active : boolean
+- created_by : string  ## FK → User
+- created_at : datetime
++ createNewVersion() : FormularTemplate
++ activate() : boolean
++ deactivate() : boolean
+
+## FormularFeld
+## Field definition with validation rules and show/hide dependencies.
+FormularFeld:
+- feld_id : string  ## PK
+- template_id : string  ## FK → FormularTemplate
+- label : string  ## Display label (German)
+- internal_name : string  ## Code identifier (English)
+- feldtyp : enum<TEXT, ZAHL, DATUM, AUSWAHL, MEHRFACHAUSWAHL, JA_NEIN>
+- ist_pflichtfeld : boolean
+- validierungsregeln : string  ## Regex or JSON
+- sortierreihenfolge : int
+- abhaengig_von : string  ## FK → FormularFeld
+- abhaengig_wert : string  ## Trigger value
++ save() : boolean
++ edit(updates: Map<string, any>) : boolean
+
+## FormularWert
+## Polymorphic value storage. Links to any entity via discriminator pattern.
+FormularWert:
+- wert_id : string  ## PK
+- feld_id : string  ## FK → FormularFeld
+- entitaet_typ : enum<ANFRAGE, FALL, BERATUNG, GEWALTTAT, BEGLEITUNG, VERWEIS>
+- entitaet_id : string  ## Polymorphic entity ID (no real FK)
+- wert : json  ## Flexible type storage
+- created_at : datetime
+- created_by : string  ## FK → User
++ save() : boolean
++ edit(new_value: any) : boolean
++ delete() : boolean
+
+============================================================================
+## 06 STATISTICS & FILTERING SYSTEM
+============================================================================
+## Modular filtering for ministry reports. Presets for reuse, junction tables 
+## for audit, StatistikErgebnis for long-term storage.
+
+## Statistik
+## Report configuration. Can be ministry template or user-defined.
+Statistik:
+- statistik_id : string  ## PK
+- titel : string
+- statistiktyp : enum<JAHRESSTATISTIK, QUARTALSSTATISTIK, MONATSSTATISTIK, BENUTZERDEFINIERT>
+- erstellungsdatum : date
+- zeitraum_start : date
+- zeitraum_ende : date
+- erstellt_von : string  ## FK → User
+- ist_vorlage : boolean  ## True for FBS_1_LE, FBS_2_LKNSA, FBS_3_LKLE
++ getData(filters: List<Filter>) : json
++ export(format: ExportFormat) : boolean
++ generate(filters: List<Filter>) : boolean
+
+## Filter
+## Single filter criterion. Reusable across statistics and presets.
+Filter:
+- filter_id : string  ## PK
+- feld_name : string
+- operator : enum<GLEICH, UNGLEICH, GROESSER, KLEINER, ENTHAELT, ZWISCHEN>
+- wert : string
+- datentyp : enum<TEXT, ZAHL, DATUM, BOOLEAN>
++ applyTo(data: json) : json
++ combineWith(other_filter: Filter) : Filter
+
+## Preset
+## Named filter combination. Personal or shared.
+Preset:
+- preset_id : string  ## PK
+- name : string
+- description : text
+- is_public : boolean
+- owner_id : string  ## FK → User
+- ist_vorlage : boolean  ## True for mandatory ministry presets
++ create(filter_list: List<Filter>) : boolean
++ edit(new_filter_list: List<Filter>) : boolean
++ delete() : boolean
++ load() : List<Filter>
+
+## Statistik_Filter
+## Junction for audit trail. Records filters used in each report generation.
+Statistik_Filter:
+- statistik_id : string  ## FK → Statistik
+- filter_id : string  ## FK → Filter
+- sortierreihenfolge : int
++ save() : boolean
+
+## Preset_Filter
+## Junction for user-saved filter combinations.
+Preset_Filter:
+- preset_id : string  ## FK → Preset
+- filter_id : string  ## FK → Filter
+- sortierreihenfolge : int
++ save() : boolean
+
+## StatistikErgebnis
+## Persistent aggregate results. Exempt from 6-month deletion for ministry compliance.
+StatistikErgebnis:
+- ergebnis_id : string  ## PK
+- statistik_id : string  ## FK → Statistik
+- generiert_am : datetime
+- zeitraum_start : date
+- zeitraum_ende : date
+- filter_konfiguration : json
+- fallanzahl : int
+- gewaltarten_verteilung : json  ## From GewalttatArt hierarchy
+- altersgruppen_verteilung : json
+- beziehungen_verteilung : json  ## From taeterinnen_details
+- folgen_verteilung : json  ## From FolgenDerGewalt hierarchy
+- wartezeiten_verteilung : json  ## From Anfrage.calculateWaitTime()
++ save() : boolean
+
+============================================================================
+## 07 EXPORT SYSTEM
+============================================================================
+## Polymorphic export to PDF/XLSX/CSV. Interface pattern separates templates 
+## (entities) from rendering logic (services).
+
+## <<interface>> ExportInterface
+## Contract for all export implementations.
+<<interface>> ExportInterface:
++ export(data: json, configuration: ExportConfiguration) : byte[]
+
+## ExportConfiguration
+## Export settings. Typically transient (not stored).
+ExportConfiguration:
+- format : enum<PDF, XLSX, CSV>
+- template_id : string
+- filename : string
+- include_metadata : boolean
++ validate() : boolean
+
+## <<service>> PDFExport
+## PDF rendering service. Not a database table.
+<<service>> PDFExport implements ExportInterface:
+- template_repository : PDFTemplateRepository
++ export(data: json, configuration: ExportConfiguration) : byte[]
+
+## <<service>> CSVExport
+## CSV rendering service. Not a database table.
+<<service>> CSVExport implements ExportInterface:
+- delimiter : char
++ export(data: json, configuration: ExportConfiguration) : byte[]
+
+## <<service>> XLSXExport
+## Excel rendering service. Not a database table.
+<<service>> XLSXExport implements ExportInterface:
+- template_repository : XLSXTemplateRepository
++ export(data: json, configuration: ExportConfiguration) : byte[]
+
+## <<entity>> PDFTemplate
+## PDF template metadata storage.
+<<entity>> PDFTemplate:
+- template_id : string  ## PK
+- name : string
+- file_path : string
+- is_active : boolean
+
+## <<entity>> XLSXTemplate
+## Excel template metadata storage.
+<<entity>> XLSXTemplate:
+- template_id : string  ## PK
+- name : string
+- file_path : string
+- is_active : boolean
+
+============================================================================
+## 08 VALIDATION SYSTEM
+============================================================================
+## Pre-save validation for format and type checking. Service layer, not stored.
+
+## <<service>> ValidationService
+## Validates raw user input before entity creation.
+<<service>> ValidationService:
++ validateInput(input_data: Map<string, any>, field_definition: FormularFeld) : ValidationResult
++ validatePassword(password: string) : boolean
++ validateDate(date_string: string) : boolean
++ validateNumber(number_string: string) : boolean
+
+## ValidationResult
+## Transient validation result container.
+ValidationResult:
+- is_valid : boolean
+- error_messages : List<string>
++ addError(error: string) : void
++ getSummary() : string
+
+============================================================================
+## 09 ANONYMIZATION SYSTEM
+============================================================================
+## Pseudonymization service and admin-only reverse lookup for legal compliance.
+
+## <<service>> AnonymisierungsService
+## Generates aliases, scrubs PII from text.
+<<service>> AnonymisierungsService:
++ generateAlias(first_name: string, last_name: string) : string
++ anonymizeText(text: string) : string
++ removePersonalData(data: Map<string, any>) : Map<string, any>
+
+## AliasMapping
+## Admin-only reverse lookup. Highly restricted access.
+AliasMapping:
+- mapping_id : string  ## PK
+- original_hash : string  ## SHA-256 hash
+- alias : string  ## Generated alias (e.g., "MS_001")
+- created_at : datetime
+- expiration_date : datetime
++ save() : boolean
+
+============================================================================
+## 10 AUDIT & RETENTION SYSTEM
+============================================================================
+## Non-editable audit log and automated 6-month case deletion with statistical 
+## preservation.
+
+## AuditLog
+## Append-only log. Exempt from deletion, preserved indefinitely.
+AuditLog:
+- log_id : string  ## PK
+- timestamp : datetime
+- user_id : string  ## FK → User
+- aktion : enum<CREATE, UPDATE, DELETE>
+- entitaet_typ : string
+- entitaet_id : string
+- feld_name : string
+- alter_wert : json
+- neuer_wert : json
++ logAction(user_id, entity_type, entity_id, field, old_value, new_value) : void
+
+## <<manager>> DatenRetentionsManager
+## Scheduled service for 6-month deletion. Not a database table.
+<<manager>> DatenRetentionsManager:
+- retention_days : int = 180
+- EXEMPT_TABLES : List<string>
++ deleteExpiredCases() : List<string>
++ cleanupFormularWert(deleted_entity_types: List<string>) : void
+
+============================================================================
+## 11 APPLICATION INFRASTRUCTURE
+============================================================================
+## Runtime application management, configuration, and session coordination.
+
+## <<singleton>> Application
+## Main application singleton. Not a database table.
+<<singleton>> Application:
+- instance : Application
+- configuration : AppConfiguration
+- session_manager : SessionManager
++ getInstance() : Application
++ initialize() : void
++ shutdown() : void
+
+## AppConfiguration
+## Application settings from environment.
+AppConfiguration:
+- database_url : string
+- secret_key : string
+- session_timeout : int
+- retention_days : int
+- file_storage_path : string
++ load() : AppConfiguration
++ validate() : boolean
+
+## <<manager>> SessionManager
+## In-memory session coordinator. Not a database table.
+<<manager>> SessionManager:
+- active_sessions : Map<session_id, Session>
++ createSession(user: User) : Session
++ destroySession(session_id: string) : void
++ validateSession(session_id: string) : boolean
++ cleanupExpired() : int
+
+============================================================================
+## 12 MANAGER CLASSES
+============================================================================
+## Service layer coordinators for business logic across multiple entities.
+
+## <<manager>> AnfrageManager
+## Coordinates Anfrage lifecycle operations.
+<<manager>> AnfrageManager:
++ createAnfrage(data: Map<string, any>) : Anfrage
++ searchByDate(from_date: date, to_date: date) : List<Anfrage>
++ calculateWaitTime(anfrage_id: string) : int
+
+## <<manager>> FallManager
+## Coordinates Fall lifecycle. Creates PersonenbezogeneDaten, manages nested entities.
+<<manager>> FallManager:
++ createFall(data: Map<string, any>) : Fall
++ addGewalttat(fall_id: string, data: Map<string, any>) : Gewalttat
++ addBegleitung(fall_id: string, data: Map<string, any>) : Begleitung
++ addVerweis(fall_id: string, data: Map<string, any>) : Verweis
++ closeFall(fall_id: string) : void
++ deleteFall(fall_id: string) : void
+
+## <<manager>> StatistikManager
+## Generates statistics, maps fields to ministry requirements.
+<<manager>> StatistikManager:
++ generateStatistics(statistik_id, filters) : StatistikErgebnis
++ mapGeschlechtsidentitaetToMinistry(category) : string
+
+============================================================================
+## 13 RELATIONSHIP DEFINITIONS
+============================================================================
+
+## ONE-TO-ONE
+Fall 1 ---- 1 PersonenbezogeneDaten  ## CASCADE DELETE
+Role 1 ---- 1 PermissionSet  ## RESTRICT
+
+## ONE-TO-MANY (CASCADE DELETE)
+User 1 ---- * Anfrage  ## SET NULL or RESTRICT
+User 1 ---- * Fall  ## SET NULL or RESTRICT
+User 1 ---- * Session  ## CASCADE
+Fall 1 ---- * Beratung  ## CASCADE
+Fall 1 ---- * Gewalttat  ## CASCADE
+Fall 1 ---- * Begleitung  ## CASCADE
+Fall 1 ---- * Verweis  ## CASCADE
+Fall 1 ---- * Fall_FolgenDerGewalt  ## CASCADE
+Gewalttat 1 ---- * Gewalttat_GewalttatArt  ## CASCADE
+FormularTemplate 1 ---- * FormularFeld  ## RESTRICT
+FormularFeld 1 ---- * FormularWert  ## RESTRICT
+Role 1 ---- * User  ## RESTRICT
+Statistik 1 ---- * StatistikErgebnis  ## CASCADE
+
+## SELF-REFERENTIAL (NO CASCADE)
+GewalttatArt 1 ---- * GewalttatArt  ## hauptkategorie_id
+FolgenDerGewalt 1 ---- * FolgenDerGewalt  ## hauptkategorie_id
+
+## MANY-TO-MANY (VIA JUNCTION)
+Gewalttat * ---- * GewalttatArt  ## via Gewalttat_GewalttatArt
+Fall * ---- * FolgenDerGewalt  ## via Fall_FolgenDerGewalt
+Statistik * ---- * Filter  ## via Statistik_Filter
+Preset * ---- * Filter  ## via Preset_Filter
+
+## POLYMORPHIC (MANUAL CLEANUP)
+FormularFeld 1 ---- * FormularWert  ## entitaet_typ + entitaet_id discriminator
+
+============================================================================
+## END OF UML CLASS DIAGRAM
+============================================================================

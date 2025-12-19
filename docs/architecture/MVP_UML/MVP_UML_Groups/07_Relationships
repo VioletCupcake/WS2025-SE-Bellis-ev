@@ -1,0 +1,125 @@
+============================================================================
+## 07 RELATIONSHIP DEFINITIONS
+============================================================================
+## This section explains how entities connect and what happens when you
+## delete records. CASCADE = children auto-delete, RESTRICT = can't delete
+## if children exist, SET NULL = FK becomes null.
+============================================================================
+
+## ONE-TO-ONE RELATIONSHIPS
+## Pattern: Each entity on left has exactly one entity on right, and vice versa.
+
+Fall 1 ---- 1 PersonenbezogeneDaten
+## Every Fall has exactly one PersonenbezogeneDaten record.
+## Created together by FallManager.createFall().
+## If Fall is deleted (soft delete in MVP), PersonenbezogeneDaten also deleted.
+## Cascade: ON DELETE CASCADE (PersonenbezogeneDaten.fall_id has FK constraint)
+
+Role 1 ---- 1 PermissionSet
+## Each role has exactly one set of permissions.
+## Never deleted in MVP (roles are permanent).
+## Cascade: RESTRICT (can't delete role if it has permissions, but we never try)
+
+## ONE-TO-MANY RELATIONSHIPS
+## Pattern: One parent (left) can have many children (right). Child has FK to parent.
+
+User 1 ---- * Session
+## One user can have multiple active sessions (e.g., logged in on phone + laptop).
+## When user is deactivated (is_active=false), all sessions terminated.
+## Cascade: CASCADE DELETE
+
+User 1 ---- * Fall
+## One user can create/manage many cases.
+## If user is deactivated, their cases remain (for audit).
+## Cascade: SET NULL (Fall.bearbeitet_von becomes null, Fall still exists)
+
+Role 1 ---- * User
+## Multiple users can share the same role.
+## Can't delete a role if users are assigned to it.
+## Cascade: RESTRICT (but roles never deleted in MVP anyway)
+
+Fall 1 ---- * Beratung
+## One case can have multiple counseling sessions.
+## If Fall archived, all Beratung records remain (for history).
+## Cascade: CASCADE DELETE (when Fall hard-deleted post-MVP)
+
+Fall 1 ---- * Gewalttat
+## One case can document multiple violence incidents.
+## If Fall deleted, all Gewalttat records deleted.
+## Cascade: CASCADE DELETE
+
+Fall 1 ---- * Fall_FolgenDerGewalt
+## One case can have multiple consequence types linked.
+## If Fall deleted, junction entries deleted.
+## Cascade: CASCADE DELETE (junction cleaned up automatically)
+
+Gewalttat 1 ---- * Gewalttat_GewalttatArt
+## One incident can involve multiple violence types.
+## If Gewalttat deleted, junction entries deleted.
+## Cascade: CASCADE DELETE
+
+## SELF-REFERENTIAL HIERARCHIES
+## Pattern: Entity references itself to create parent-child structure.
+
+GewalttatArt 1 ---- * GewalttatArt
+## Main categories (hauptkategorie_id=null) have subcategories.
+## hauptkategorie_id points back to GewalttatArt table.
+## Cascade: NO CASCADE (deleting parent doesn't auto-delete children)
+## MVP: Don't allow deleting categories at all (RESTRICT in app logic)
+
+FolgenDerGewalt 1 ---- * FolgenDerGewalt
+## Same pattern as GewalttatArt - hierarchical consequences.
+## Cascade: NO CASCADE
+
+## MANY-TO-MANY RELATIONSHIPS
+## Pattern: Multiple entities on both sides can relate to each other.
+## Implemented via junction table with two FKs.
+
+Gewalttat * ---- * GewalttatArt (via Gewalttat_GewalttatArt)
+## One incident can have multiple violence types.
+## One violence type can appear in many incidents.
+## Junction table: Gewalttat_GewalttatArt
+## Deleting Gewalttat: CASCADE (junction rows deleted)
+## Deleting GewalttatArt: RESTRICT (can't delete types in use)
+
+Fall * ---- * FolgenDerGewalt (via Fall_FolgenDerGewalt)
+## One case can have multiple consequences.
+## One consequence type can appear in many cases.
+## Junction table: Fall_FolgenDerGewalt
+## Deleting Fall: CASCADE (junction rows deleted)
+## Deleting FolgenDerGewalt: RESTRICT (can't delete types in use)
+
+## MANAGER DEPENDENCIES (DOTTED LINES IN DIAGRAM)
+## These aren't database relationships - they show which manager
+## coordinates which entities.
+
+FallManager ..> Fall
+## FallManager orchestrates Fall CRUD operations
+
+FallManager ..> PersonenbezogeneDaten
+## FallManager creates PersonenbezogeneDaten when creating Fall
+
+FallManager ..> Beratung
+## FallManager handles adding Beratung to Fall
+
+FallManager ..> Gewalttat
+## FallManager handles adding Gewalttat to Fall
+
+FallManager ..> ValidationService
+## FallManager calls ValidationService before saving
+
+SessionManager ..> Session
+## SessionManager creates/destroys Session records
+
+SessionManager ..> User
+## SessionManager authenticates against User table
+
+## MVP CASCADE DELETE ORDER (when hard-deleting Fall post-MVP):
+## 1. Delete Fall_FolgenDerGewalt junction rows
+## 2. Delete Gewalttat_GewalttatArt junction rows
+## 3. Delete Beratung records
+## 4. Delete Gewalttat records
+## 5. Delete PersonenbezogeneDaten record
+## 6. Delete Fall record
+##
+## In MVP: Soft delete only (status=ARCHIVIERT), so cascade doesn't happen.

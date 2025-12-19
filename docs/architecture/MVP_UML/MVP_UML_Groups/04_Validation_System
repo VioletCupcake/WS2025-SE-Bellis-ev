@@ -1,0 +1,44 @@
+============================================================================
+## 04 VALIDATION SYSTEM
+============================================================================
+## What it does: Checks user input before saving to database.
+## MVP scope: Format validation only (types, ranges, required fields).
+## Why it matters: Prevents garbage data. Shows Django forms integration.
+============================================================================
+
+## <<service>> ValidationService
+## Not a database table - this is a utility class with validation logic.
+## Called by FallManager before saving any entity.
+<<service>> ValidationService:
++ validateInput(input_data, field_name, field_type) : ValidationResult
++ validatePassword(password) : boolean  ## Min length, requires digit/special char
++ validateDate(date_string) : boolean  ## Format check (YYYY-MM-DD)
++ validateNumber(number_string) : boolean  ## Is it actually a number?
++ validateEnum(value, allowed_values) : boolean  ## Is value in the list?
+
+## MVP Implementation Notes:
+## - validateInput() is the main entry point - checks one field at a time
+## - field_type determines which specific validator to call
+## - Returns ValidationResult with pass/fail and error messages
+## - Django forms will call this on form.is_valid()
+
+## Example Usage in FallManager:
+## result = ValidationService.validateInput(data['alter'], 'alter', 'int')
+## if not result.is_valid:
+##     return result.error_messages
+
+## ValidationResult
+## Container for validation outcomes. Created by ValidationService.
+ValidationResult:
+- is_valid : boolean  ## True = all checks passed
+- error_messages : List<string>  ## Empty if valid, otherwise reasons for failure
++ addError(error) : void  ## Append a new error message
++ getSummary() : string  ## Joins all error messages with newlines
+
+## MVP Example:
+## result = ValidationResult()
+## result.is_valid = False
+## result.addError("Alter muss zwischen 0 und 120 liegen")
+## result.addError("Pflichtfeld darf nicht leer sein")
+## print(result.getSummary())
+## → "Alter muss zwischen 0 und 120 liegen\nPflichtfeld darf nicht leer sein"

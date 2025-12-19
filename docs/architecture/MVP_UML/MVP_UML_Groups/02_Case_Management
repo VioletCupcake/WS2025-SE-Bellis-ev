@@ -1,0 +1,117 @@
+============================================================================
+## 02 CASE MANAGEMENT
+============================================================================
+## What it does: The core of the system - tracking survivor cases.
+## MVP scope: Create, read, update, archive cases with demographic data,
+## counseling sessions, and violence incidents. Search by alias or date.
+## Why it matters: This is the main business value - organizing case data
+## that was previously in messy Excel files.
+============================================================================
+
+## Fall
+## The main case record. Everything else hangs off this.
+## MVP: Manual alias entry (no auto-generation service). Soft delete only
+## (status=ARCHIVIERT, never actually remove from DB).
+Fall:
+- fall_id : string  ## PK - UUID
+- alias : string  ## UNIQUE - User types this in (e.g., "MS_001")
+- personenbezogene_daten_id : string  ## FK → PersonenbezogeneDaten (1:1)
+- zustaendige_beratungsstelle : enum  ## Which B-EV office handles this
+- erstellungsdatum : date  ## Auto-set on creation
+- letzte_bearbeitung : date  ## Auto-updated on any edit
+- bearbeitet_von : string  ## FK → User - Last editor
+- status : enum<AKTIV, ARCHIVIERT>  ## No "GELOESCHT" in MVP
+- ist_vollstaendig : boolean  ## All required fields filled?
+- ist_abgeschlossen : boolean  ## Case closed?
+- abschlussdatum : datetime  ## When it was closed (nullable)
+- beratungsanzahl : int  ## Count of Beratung records (denormalized for speed)
+- letzte_beratung : date  ## Date of most recent Beratung (for sorting)
+- informationsquelle : enum  ## How did they hear about B-EV?
+- informationsquelle_andere : text  ## Free text if "andere" selected
+- anzahl_dolmetschungen_stunden : float  ## Total interpreter hours
+- dolmetschung_sprachen : text  ## Comma-separated list
+- weitere_notizen : text  ## General notes field
++ save()  ## Create or update
++ edit(updates)  ## Partial update
++ close()  ## Sets ist_abgeschlossen, abschlussdatum
++ searchByAlias(alias) : Fall  ## Exact or partial match
++ searchByDateRange(from, to) : List<Fall>  ## By erstellungsdatum
+
+## MVP Decision: No loeschdatum or 6-month retention (cut for MVP).
+## Cases stay forever in MVP - deletion is post-MVP work.
+
+## PersonenbezogeneDaten
+## Sensitive demographic info separated for data protection concept.
+## MVP: Shows architectural separation even without full anonymization system.
+PersonenbezogeneDaten:
+- personenbezogene_daten_id : string  ## PK
+- fall_id : string  ## FK → Fall (1:1, CASCADE DELETE)
+- rolle_der_ratsuchenden_person : enum  ## Who are we counseling?
+- alter : int  ## Age (nullable - they can refuse to answer)
+- alter_keine_angabe : boolean  ## Explicit "no answer" flag
+- geschlechtsidentitaet : enum  ## Long list: cis w/m, trans, nb, etc.
+- sexualitaet : enum  ## Orientation
+- wohnort : enum  ## Region
+- wohnort_details : text  ## If Deutschland/andere, specify
+- staatsangehoerigkeit_deutsch : boolean  ## German citizenship?
+- staatsangehoerigkeit_land : string  ## If not German, which country?
+- berufliche_situation : enum  ## Employment status
+- schwerbehinderung : boolean  ## Disability present?
+- form_der_behinderung : enum  ## Type if yes
+- grad_der_behinderung : int  ## Percentage (German system)
+- weitere_notizen : text
++ save()
++ edit(updates)
+
+## MVP Note: This is created automatically when Fall is created (FallManager
+## handles both in one transaction). User never creates this separately.
+
+## Beratung
+## A counseling session. Cases can have many of these.
+## MVP: Simple logging - date, how it happened, where. Proves we can track
+## multiple sessions per case.
+Beratung:
+- beratung_id : string  ## PK
+- fall_id : string  ## FK → Fall (CASCADE DELETE)
+- datum : date  ## When the session happened
+- durchfuehrungsart : enum  ## In-person, video call, phone, etc.
+- durchfuehrungsort : enum  ## Which office/location
+- weitere_notizen : text  ## Session notes
++ save()
+
+## MVP Note: Creating Beratung increments Fall.beratungsanzahl and updates
+## Fall.letzte_beratung automatically (FallManager handles this).
+
+## Gewalttat
+## A violence incident. One case can have multiple incidents over time.
+## Perpetrator info stored as JSON because it's variable-length and MVP
+## doesn't need a separate Täter:in entity.
+Gewalttat:
+- gewalttat_id : string  ## PK
+- fall_id : string  ## FK → Fall (CASCADE DELETE)
+- alter_zum_zeitpunkt_der_tat : int  ## How old was victim?
+- alter_keine_angabe : boolean
+- zeitraum_von : date  ## Incident start (nullable)
+- zeitraum_bis : date  ## Incident end if ongoing (nullable)
+- zeitraum_keine_angabe : boolean
+- zahl_der_vorfaelle : enum  ## Once, multiple, exact number, unknown
+- zahl_der_vorfaelle_genau : int  ## If "exact number" selected
+- anzahl_taeterinnen : enum  ## One, multiple, exact, unknown
+- anzahl_taeterinnen_genau : int  ## If "exact" selected
+- taeterinnen_details : json  ## Array of {geschlecht, verhaeltnis} objects
+- tatort : enum  ## Where it happened (region/country)
+- anzeige : enum  ## Reported to police? Yes/No/Undecided/Unknown
+- medizinische_versorgung : enum  ## Medical help? Yes/No/Unknown
+- vertrauliche_spurensicherung : enum  ## Evidence collected? Yes/No/Unknown
+- mitbetroffene_kinder : int  ## Number of affected children
+- davon_direkt_betroffen : int  ## How many directly harmed
+- weitere_notizen : text
++ save()
++ addTaeterIn(geschlecht, verhaeltnis)  ## Appends to JSON array
+
+## MVP taeterinnen_details JSON example:
+## [{"geschlecht": "männlich", "verhaeltnis": "Partner"}, 
+##  {"geschlecht": "männlich", "verhaeltnis": "Bekannter"}]
+##
+## Why JSON instead of separate entity? MVP simplicity. We can query this
+## for statistics but don't need complex relationships yet.

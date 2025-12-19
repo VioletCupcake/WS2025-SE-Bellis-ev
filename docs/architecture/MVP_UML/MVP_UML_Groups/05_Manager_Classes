@@ -1,0 +1,68 @@
+============================================================================
+## 05 MANAGER CLASSES
+============================================================================
+## What they do: Coordinate operations across multiple entities. Business
+## logic lives here, not in the entities themselves.
+## MVP scope: Two managers - FallManager for case operations, SessionManager
+## for login/logout.
+## Why it matters: Keeps Django models simple (just data), puts workflows
+## in reusable manager classes.
+============================================================================
+
+## <<manager>> FallManager
+## Orchestrates all Fall-related operations. This is where the business
+## logic happens - not in the Fall model itself.
+<<manager>> FallManager:
++ createFall(data) : Fall  ## Creates Fall + PersonenbezogeneDaten in one transaction
++ updateFall(fall_id, data) : Fall  ## Updates Fall, validates first
++ deleteFall(fall_id) : void  ## Soft delete (status→ARCHIVIERT), MVP doesn't hard-delete
++ addBeratung(fall_id, data) : Beratung  ## Also increments Fall.beratungsanzahl
++ addGewalttat(fall_id, data) : Gewalttat  ## Creates Gewalttat + junction rows
++ closeFall(fall_id) : void  ## Sets ist_abgeschlossen=true, abschlussdatum=now
++ searchByAlias(alias) : Fall  ## Case-insensitive partial match
++ searchByDateRange(from, to) : List<Fall>  ## By erstellungsdatum
+
+## MVP Implementation Flow for createFall():
+## 1. Validate all input data (call ValidationService)
+## 2. Check alias is unique (query database)
+## 3. Start database transaction
+## 4. Create Fall record
+## 5. Create PersonenbezogeneDaten record (fall_id = new Fall's ID)
+## 6. Commit transaction
+## 7. Return the new Fall object
+##
+## Why transaction? If PersonenbezogeneDaten creation fails, Fall should
+## also roll back - never have orphaned Fall without demographic data.
+
+## MVP Implementation for addBeratung():
+## 1. Validate Beratung data
+## 2. Create Beratung record with fall_id
+## 3. Increment Fall.beratungsanzahl by 1
+## 4. Update Fall.letzte_beratung to this Beratung's datum
+## 5. Save Fall record
+## 6. Return new Beratung
+##
+## This keeps the aggregate counts in sync automatically.
+
+## <<manager>> SessionManager
+## Handles user authentication and session lifecycle.
+<<manager>> SessionManager:
+- active_sessions : Map<session_id, Session>  ## In-memory store for MVP
++ createSession(user) : Session  ## Called after successful login
++ destroySession(session_id) : void  ## Logout
++ validateSession(session_id) : boolean  ## Check if still active and not expired
++ cleanupExpired() : int  ## Remove expired sessions, return count removed
+
+## MVP Implementation Notes:
+## - active_sessions is a dictionary in memory (MVP only - production uses Redis)
+## - cleanupExpired() runs periodically (every 15 minutes via background task)
+## - Session timeout = 30 minutes of inactivity
+## - validateSession() checks: exists in active_sessions, is_active=true,
+##   last_activity < 30 min ago
+
+## Example Login Flow:
+## 1. User submits username/password to login view
+## 2. Django auth checks password_hash
+## 3. If valid, call SessionManager.createSession(user)
+## 4. Store session_id in browser cookie
+## 5. On each subsequent request, check SessionManager.validateSession(cookie)

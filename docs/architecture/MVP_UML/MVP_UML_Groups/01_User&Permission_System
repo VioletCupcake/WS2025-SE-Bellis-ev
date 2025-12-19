@@ -1,0 +1,67 @@
+============================================================================
+## 01 USER & PERMISSION SYSTEM
+============================================================================
+## What it does: Handles who can log in and what they're allowed to do.
+## MVP scope: Three demo users (one per role) to show different permission levels.
+## Why it matters: B-EV needs to control who can see sensitive survivor data.
+============================================================================
+
+## User
+## This is a B-EV employee who uses the system. Each user has one role that
+## determines their permissions. MVP needs 3 demo users to showcase the 
+## permission system.
+User:
+- user_id : string  ## PK - Unique identifier
+- username : string  ## What they type to log in
+- email : string
+- password_hash : string  ## Encrypted password - NEVER store plaintext
+- role_id : string  ## FK → Role - Links to their permission level
+- is_active : boolean  ## Can deactivate instead of deleting (keeps history)
+- created_at : datetime
++ login(username, password) : Session  ## Returns active session on success
++ logout(session_id) : void  ## Ends the session
++ changePassword(old, new) : boolean  ## Returns true if successful
+
+## Session
+## Tracks that a user is currently logged in. Expires after timeout period.
+## In MVP: Simple in-memory sessions are fine (no Redis needed yet).
+Session:
+- session_id : string  ## PK - Random token identifying this login
+- user_id : string  ## FK → User - Who this session belongs to
+- start_time : datetime  ## When they logged in
+- last_activity : datetime  ## Updated on each request (for timeout)
+- is_active : boolean  ## False = logged out or expired
++ extend() : void  ## Refreshes the timeout
++ terminate() : void  ## Explicit logout
+
+## Role
+## One of three fixed permission levels. Never changes after deployment.
+## MVP: Seed exactly 3 rows (BASIS, ERWEITERT, ADMINISTRATOR).
+Role:
+- role_id : string  ## PK
+- name : enum<BASIS, ERWEITERT, ADMINISTRATOR>
+- description : text  ## Human-readable explanation for UI
++ isAuthorized(permission) : boolean  ## Checks PermissionSet
+
+## PermissionSet
+## The actual list of what each role can do. One row per role (3 total).
+## Boolean flags make this simple to check in code.
+PermissionSet:
+- permission_set_id : string  ## PK
+- role_id : string  ## FK → Role (one-to-one)
+## All roles get these:
+- can_view_cases : boolean  ## Read Fall records
+- can_edit_cases : boolean  ## Create/modify Fall records
+- can_delete_cases : boolean  ## Archive Fall records
+## ERWEITERT gets this extra:
+- can_manage_reference_data : boolean  ## Add new GewalttatArt/FolgenDerGewalt entries
+## ADMINISTRATOR exclusive:
+- can_manage_users : boolean  ## Create/deactivate User accounts
+- can_assign_roles : boolean  ## Change User.role_id
++ validate() : boolean  ## Make sure at least one permission is true
+
+## MVP Notes:
+## - No custom form fields (cut from MVP) so ERWEITERT doesn't get that perk
+## - can_manage_reference_data gives ERWEITERT something unique to demo
+## - Passwords hashed with bcrypt (Django built-in)
+## - Session timeout: 30 minutes of inactivity

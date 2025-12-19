@@ -1,0 +1,71 @@
+============================================================================
+## 03 REFERENCE DATA
+============================================================================
+## What it does: Pre-populated lookup tables for violence types and
+## consequences. Users select from these lists when filling out forms.
+## MVP scope: Seed 5-10 entries in each table. ERWEITERT role can add more.
+## Why it matters: Standardizes data entry (not free text) so statistics
+## work properly.
+============================================================================
+
+## GewalttatArt
+## Types of violence. Hierarchical: main categories have subcategories.
+## Example: "Sexualisierte Gewalt" → ["Vergewaltigung", "Sexuelle Belästigung"]
+## MVP: Seed 5-10 realistic entries, including "Andere" catch-all.
+GewalttatArt:
+- art_id : string  ## PK
+- name : string  ## Display name (e.g., "Vergewaltigung")
+- ist_unterkategorie : boolean  ## True if this is a subcategory
+- hauptkategorie_id : string  ## FK → GewalttatArt (null for main categories)
+- beschreibung : text  ## Explanation for staff (optional)
++ save()
+
+## MVP Seed Example:
+## 1. {art_id: "SEX", name: "Sexualisierte Gewalt", ist_unterkategorie: false, hauptkategorie_id: null}
+## 2. {art_id: "VER", name: "Vergewaltigung", ist_unterkategorie: true, hauptkategorie_id: "SEX"}
+## 3. {art_id: "BEL", name: "Sexuelle Belästigung", ist_unterkategorie: true, hauptkategorie_id: "SEX"}
+## 4. {art_id: "KOE", name: "Körperliche Gewalt", ist_unterkategorie: false, hauptkategorie_id: null}
+## 5. {art_id: "AND", name: "Andere", ist_unterkategorie: false, hauptkategorie_id: null}
+
+## Gewalttat_GewalttatArt
+## Junction table: One Gewalttat can involve multiple types of violence.
+## User checks multiple boxes in form → Creates multiple junction rows.
+Gewalttat_GewalttatArt:
+- gewalttat_id : string  ## FK → Gewalttat (CASCADE DELETE)
+- art_id : string  ## FK → GewalttatArt (RESTRICT - don't delete types in use)
+- andere_details : text  ## Free text if art_id points to "Andere"
++ save()
+
+## MVP Example: Gewalttat_123 was both rape and harassment:
+## {gewalttat_id: "123", art_id: "VER", andere_details: null}
+## {gewalttat_id: "123", art_id: "BEL", andere_details: null}
+
+## FolgenDerGewalt
+## Consequences of violence. Also hierarchical with categories.
+## MVP: Seed 8-12 common ones (PTSD, Angst, körperliche Verletzungen, etc.)
+FolgenDerGewalt:
+- folge_id : string  ## PK
+- name : string  ## Display name
+- kategorie : enum  ## PSYCHISCH, KOERPERLICH, DAUERHAFT, FINANZIELL, etc.
+- ist_unterkategorie : boolean
+- hauptkategorie_id : string  ## FK → FolgenDerGewalt (self-reference)
+- beschreibung : text
++ save()
+
+## MVP Seed Example:
+## {folge_id: "PSY", name: "Psychische Folgen", kategorie: "PSYCHISCH", ist_unterkategorie: false}
+## {folge_id: "PTBS", name: "PTBS", kategorie: "PSYCHISCH", ist_unterkategorie: true, hauptkategorie_id: "PSY"}
+## {folge_id: "ANG", name: "Angststörung", kategorie: "PSYCHISCH", ist_unterkategorie: true, hauptkategorie_id: "PSY"}
+
+## Fall_FolgenDerGewalt
+## Junction: One case can have multiple consequences.
+## weitere_informationen allows case-specific notes (e.g., "diagnosed by Dr. X").
+Fall_FolgenDerGewalt:
+- fall_id : string  ## FK → Fall (CASCADE DELETE)
+- folge_id : string  ## FK → FolgenDerGewalt (RESTRICT)
+- weitere_informationen : text  ## Optional case-specific details
++ save()
+
+## MVP Permission Note: ERWEITERT role can add new GewalttatArt and
+## FolgenDerGewalt entries via admin UI. BASIS role can only select from
+## existing entries. This gives ERWEITERT a unique capability to demonstrate.
