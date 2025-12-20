@@ -19,6 +19,8 @@
 ## 3)   UML Mapped to Django - Since we are using Django, a lot of elements can be implemented in much simpler means.
 ## The goal being that you can understand how which of these functions translate into Django, and how to implement it.
 
+## If you just want to skip to where we currently are, the MVP_DJANGO dir is the way to go
+
 
 
 ## ============================================================================
