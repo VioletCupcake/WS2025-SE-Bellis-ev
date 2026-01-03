@@ -1,0 +1,2 @@
+Sooo just you know, i split up the models (the models.py in main just refers over here, hopefully)
+because otherwise this would be fucking Huuuuuuuge
