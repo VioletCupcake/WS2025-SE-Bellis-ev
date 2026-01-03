@@ -45,7 +45,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core'
 ]
+
+# custom user model
+AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,7 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'se_bev.urls'
+ROOT_URLCONF = 'B_EV.urls'
 
 TEMPLATES = [
     {
@@ -75,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'se_bev.wsgi.application'
+WSGI_APPLICATION = 'B_EV.wsgi.application'
 
 
 # Database
@@ -84,7 +88,7 @@ WSGI_APPLICATION = 'se_bev.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'bev_db'),
+        'NAME': os.getenv('DB_NAME', 'bev_dev'),
         'USER': os.getenv('DB_USER', 'bev_user'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''), #gets password from env
         'HOST': os.getenv('DB_HOST', 'localhost'),
@@ -118,9 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'de-de'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 
