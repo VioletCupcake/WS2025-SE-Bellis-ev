@@ -1,5 +1,5 @@
 """
-WSGI config for se_bev project.
+WSGI config for B_EV project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

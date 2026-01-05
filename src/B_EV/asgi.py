@@ -1,5 +1,5 @@
 """
-ASGI config for se_bev project.
+ASGI config for B_EV project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
