@@ -295,7 +295,7 @@ class PersonenbezogeneDaten(models.Model):
             MinValueValidator(0, message="GdB muss mindestens 0 sein"),
             MaxValueValidator(100, message="GdB darf höchstens 100 sein")
         ],
-        help_text="Grad der Behinderung (0-100, German system)"
+        help_text="Grad der Behinderung (0-100 is the system used in germany)"
     )
     # Form & Grad nur visible if Schwerbehinderung == 'JA'
     
@@ -309,3 +309,113 @@ class PersonenbezogeneDaten(models.Model):
     
     def __str__(self):
         return f"Daten für {self.alias}"
+
+
+### Beratung and Gewalttat models on new branch
+
+class Beratung(models.Model):
+    """
+    for individual consultations sessions, linked to Fall
+    many-to-one relationship with Fall
+    automatically updates Fall.beratungsanzahl and Fall.letzte_beratung on save
+    """
+    # Durchführungsart choices
+    DURCHFUEHRUNGSART_CHOICES = [
+        ('PERSOENLICH', 'persönlich'),
+        ('VIDEO', 'video'),
+        ('TELEFON', 'telefon'),
+        ('AUFSUCHEND', 'aufsuchend'),
+        ('SCHRIFTLICH', 'schriftlich'),
+    ]
+    
+    # Durchführungsort choices (matches Beratungsstelle locations)
+    ORT_CHOICES = [
+        ('LEIPZIG_STADT', 'Leipzig Stadt'),
+        ('LEIPZIG_LAND', 'Leipzig Land'),
+        ('NORDSACHSEN', 'Nordsachsen'),
+    ]
+    
+    # Primary key
+    beratung_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Foreign key to Fall (CASCADE delete)
+    fall = models.ForeignKey(
+        Fall,
+        on_delete=models.CASCADE,
+        related_name='beratungen'
+    )
+    
+    # Session details
+    datum = models.DateField()
+    durchfuehrungsart = models.CharField(
+        max_length=20,
+        choices=DURCHFUEHRUNGSART_CHOICES
+    )
+    durchfuehrungsort = models.CharField(
+        max_length=20,
+        choices=ORT_CHOICES
+    )
+    
+    # Notes
+    weitere_notizen = models.TextField(blank=True)
+    
+    class Meta:
+        db_table = 'beratung'
+        ordering = ['-datum']  # Most recent first
+        verbose_name = 'Beratung'
+        verbose_name_plural = 'Beratungen'
+        indexes = [
+            models.Index(fields=['fall', 'datum']),
+        ]
+    
+    def __str__(self):
+        return f"Beratung {self.datum} für {self.fall}"
+    
+    def save(self, *args, **kwargs):
+        """
+        Override save to update Fall aggregate counters.
+        Updates beratungsanzahl and letzte_beratung on Fall.
+        """
+        # Check if this is a new Beratung (not an update, so we dont double count)
+        is_new = self._state.adding
+        
+        # Save the Beratung first
+        super().save(*args, **kwargs)
+        
+        # Update Fall aggregates only for new Beratungen
+        if is_new:
+            # Increment beratungsanzahl
+            self.fall.beratungen.count()  # type: ignore[attr-defined]
+            self.fall.beratungsanzahl = self.fall.beratungen.count()  # type: ignore[attr-defined]
+            
+            # Update letzte_beratung to most recent date
+            latest_beratung = self.fall.beratungen.order_by('-datum').first()  # type: ignore[attr-defined]
+            if latest_beratung:
+                self.fall.letzte_beratung = latest_beratung.datum
+            
+            # Save Fall with updated aggregates
+            self.fall.save(update_fields=['beratungsanzahl', 'letzte_beratung'])
+    
+    def delete(self, *args, **kwargs) -> tuple[int, dict[str, int]]:
+        """
+        Override delete to update Fall aggregate counters.
+        Returns tuple of (number_deleted, {model_name: count}) per Django convention.
+        praise be to copilot for fixing my errors. but looks good i think
+        """
+        fall = self.fall
+        
+        # Delete the Beratung (capture return value)
+        deletion_result = super().delete(*args, **kwargs)
+        
+        # Recalculate aggregates
+        fall.beratungsanzahl = fall.beratungen.count()  # type: ignore[attr-defined]
+        
+        # Update letzte_beratung
+        latest_beratung = fall.beratungen.order_by('-datum').first()  # type: ignore[attr-defined]
+        fall.letzte_beratung = latest_beratung.datum if latest_beratung else None
+        
+        # Save Fall with updated aggregates
+        fall.save(update_fields=['beratungsanzahl', 'letzte_beratung'])
+        
+        # Return Django's expected tuple
+        return deletion_result

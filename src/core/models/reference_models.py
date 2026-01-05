@@ -1,1 +1,2 @@
-"""Reference data model definitions."""
+"""Reference data model definitions.
+create GewalttatArt and FolgenDerGewalt here"""
