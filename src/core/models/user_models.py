@@ -1,6 +1,7 @@
 """
 User authentication and permission models.
 Implements 3-tier role system: BASIS, ERWEITERT, ADMINISTRATOR.
+Also has Sessions and permissions
 """
 import uuid
 from django.contrib.auth.models import AbstractUser
@@ -65,10 +66,17 @@ class PermissionSet(models.Model):
     )
     can_view_cases = models.BooleanField(default=True)
     can_edit_cases = models.BooleanField(default=False)
-    can_delete_cases = models.BooleanField(default=False)
+    can_delete_cases = models.BooleanField(default=False)  # Soft delete
+    can_hard_delete_cases = models.BooleanField(default=False)  # Hard delete
     can_manage_reference_data = models.BooleanField(default=False)
     can_manage_users = models.BooleanField(default=False)
     can_assign_roles = models.BooleanField(default=False)
+    
+    # Permission assignment strategy:
+    # BASIS: can_delete_cases=False, can_hard_delete_cases=False
+    # ERWEITERT: can_delete_cases=True (soft), can_hard_delete_cases=False
+    # ADMINISTRATOR: can_delete_cases=True, can_hard_delete_cases=True
+
     
     class Meta:
         db_table = 'permission_set'

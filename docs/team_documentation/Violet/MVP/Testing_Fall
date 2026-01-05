@@ -1,0 +1,38 @@
+
+>>> from core.models import Fall, PersonenbezogeneDaten, Role
+>>> 
+>>> # Test Fall creation
+>>> fall = Fall.objects.create(
+...     zustaendige_beratungsstelle='FBS_1_LE',
+...     status='AKTIV'
+... )
+.fall_id}")>>> print(f"Fall created: {fall.fall_id}")
+Fall created: d3c56e30-8850-46a7-b659-4576910df472
+
+## Fall Creation works
+
+>>> personen_daten = PersonenbezogeneDaten.objects.create(
+...     fall=fall,
+...     alias='TEST_001',
+...     rolle_der_ratsuchenden_person='BETROFFENE',
+...     alter=30
+... )
+nen_daten.alias}")>>> print(f"PersonenbezogeneDaten created: {personen_daten.alias}")
+PersonenbezogeneDaten created: TEST_001
+>>> print(f"Fall __str__: {fall}")  # Should print "TEST_001"
+Fall __str__: TEST_001
+
+### creating personenbez. daten works
+
+>>> fall.delete()
+neDaten should be cascade-deleted")(2, {'core.PersonenbezogeneDaten': 1, 'core.Fall': 1})
+>>> print("Fall deleted")
+Fall deleted
+
+# delete works
+
+>>> count = PersonenbezogeneDaten.objects.filter(alias='TEST_001').count()
+ count (should be 0): {count}")>>> print(f"PersonenbezogeneDaten count (should be 0): {count}")
+PersonenbezogeneDaten count (should be 0): 0
+
+## also cascades i guess?
