@@ -1,0 +1,513 @@
+[
+  {
+    "model": "core.role",
+    "pk": "d10b18b5-dd69-4b98-bb7e-659fc16ea3ee",
+    "fields": {
+      "name": "BASIS",
+      "description": "Basis-Berechtigung: Fälle ansehen und bearbeiten"
+    }
+  },
+  {
+    "model": "core.role",
+    "pk": "62854211-3291-4a94-9561-2dfc712a5315",
+    "fields": {
+      "name": "ERWEITERT",
+      "description": "Erweiterte Berechtigung: Zusätzlich Referenzdaten verwalten"
+    }
+  },
+  {
+    "model": "core.role",
+    "pk": "42d60440-fe4c-4128-bca1-c4120be08f95",
+    "fields": {
+      "name": "ADMIN",
+      "description": "Administrator: Vollzugriff inkl. Benutzerverwaltung"
+    }
+  },
+  {
+    "model": "core.permissionset",
+    "pk": "de35ad8c-963f-401b-92b4-e094d6e9f650",
+    "fields": {
+      "role": "d10b18b5-dd69-4b98-bb7e-659fc16ea3ee",
+      "can_view_cases": true,
+      "can_edit_cases": true,
+      "can_delete_cases": false,
+      "can_hard_delete_cases": false,
+      "can_manage_reference_data": false,
+      "can_manage_users": false,
+      "can_assign_roles": false
+    }
+  },
+  {
+    "model": "core.permissionset",
+    "pk": "c2c4ec89-c392-4add-a1e5-5bbe2e6a524f",
+    "fields": {
+      "role": "62854211-3291-4a94-9561-2dfc712a5315",
+      "can_view_cases": true,
+      "can_edit_cases": true,
+      "can_delete_cases": true,
+      "can_hard_delete_cases": false,
+      "can_manage_reference_data": true,
+      "can_manage_users": false,
+      "can_assign_roles": false
+    }
+  },
+  {
+    "model": "core.permissionset",
+    "pk": "b73b2b4b-f75f-404b-925c-e298aca494ac",
+    "fields": {
+      "role": "42d60440-fe4c-4128-bca1-c4120be08f95",
+      "can_view_cases": true,
+      "can_edit_cases": true,
+      "can_delete_cases": true,
+      "can_hard_delete_cases": true,
+      "can_manage_reference_data": true,
+      "can_manage_users": true,
+      "can_assign_roles": true
+    }
+  },
+  {
+    "model": "core.user",
+    "pk": "ac7f9734-2507-40c9-9d5a-5ea965a49a27",
+    "fields": {
+      "username": "user_basis",
+      "email": "basis@b-ev.test",
+      "password": "pbkdf2_sha256$720000$Rm8xdf7gX0s7G1lTQyarD7$+0OZHcuRmv91NBySi5w+b1QBEDHOkT50KY3HRIWpGgU=",
+      "role": "d10b18b5-dd69-4b98-bb7e-659fc16ea3ee",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "first_name": "Basis",
+      "last_name": "User"
+    }
+  },
+  {
+    "model": "core.user",
+    "pk": "ecafd906-216c-4de5-99b3-922708f9ccbb",
+    "fields": {
+      "username": "user_erweitert",
+      "email": "erweitert@b-ev.test",
+      "password": "pbkdf2_sha256$720000$XSWq1zpg7ccA8xwtwUQycK$rT/Fj5qwnN5lzLYt9Lje/b77FHLorO+xnUcHmjL46l4=",
+      "role": "62854211-3291-4a94-9561-2dfc712a5315",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false,
+      "first_name": "Erweitert",
+      "last_name": "User"
+    }
+  },
+  {
+    "model": "core.user",
+    "pk": "446fe17b-2cae-4fe5-8312-789a010f6695",
+    "fields": {
+      "username": "user_admin",
+      "email": "admin@b-ev.test",
+      "password": "pbkdf2_sha256$720000$L1cfVVtOSmg93SLEGymTGP$FzovOyLbgr4NDK3mzhiBnOmFaiCGozqpiwHbeuJ4GGM=",
+      "role": "42d60440-fe4c-4128-bca1-c4120be08f95",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "first_name": "Admin",
+      "last_name": "User"
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "c68019c7-d498-4403-9810-bdcd3bbe5538",
+    "fields": {
+      "name": "Sexuelle Belästigung",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "5f1adf64-33ae-4862-a71e-ee7b8a5b2719",
+    "fields": {
+      "name": "Vergewaltigung",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "870597d8-35df-4c65-bed4-b55cd5508fac",
+    "fields": {
+      "name": "Versuchte Vergewaltigung",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "b99c4e86-0c50-4f29-a7cc-9f1a29407220",
+    "fields": {
+      "name": "Sexueller Missbrauch",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "1f867d6f-eb01-4ab0-9d49-1c5b41b64432",
+    "fields": {
+      "name": "Sexueller Missbrauch in der Kindheit",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "ea4269d0-2ef1-4f80-88ed-f0e8eb24121b",
+    "fields": {
+      "name": "Sexuelle Nötigung",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "6b7ae246-5d38-47a5-b055-d2f59ccdc5ca",
+    "fields": {
+      "name": "Rituelle Gewalt",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "b1dc8a87-b575-4b3d-a1b4-540f6f185d55",
+    "fields": {
+      "name": "Zwangsprostitution",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "ca5fe68a-246d-4655-bfc5-9c209fd88eb8",
+    "fields": {
+      "name": "Sexuelle Ausbeutung",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "256c530e-6524-4c55-af52-df455018a74f",
+    "fields": {
+      "name": "Upskirting",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "5fd30ad6-45d2-4f67-bf55-d96aa069ef84",
+    "fields": {
+      "name": "Catcalling",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "1974dc02-1588-42b5-8813-9d28fc1763ca",
+    "fields": {
+      "name": "Digitale sexuelle Gewalt",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "448e5765-afae-433e-9ace-3cd5d29b0067",
+    "fields": {
+      "name": "Spiking",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "887fd719-0f06-4068-a8b4-87b076db29df",
+    "fields": {
+      "name": "Andere",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "b6f428b5-2c7b-49ef-8c37-845d831cf8f9",
+    "fields": {
+      "name": "Keine Angabe",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "31c569af-a59e-493f-8218-8c5129c51853",
+    "fields": {
+      "name": "Sexuelle Belästigung im öffentlichen Raum",
+      "ist_unterkategorie": true,
+      "hauptkategorie": "c68019c7-d498-4403-9810-bdcd3bbe5538",
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "9f27e942-533c-4c74-91dc-69fb27b56a38",
+    "fields": {
+      "name": "Sexuelle Belästigung am Arbeitsplatz",
+      "ist_unterkategorie": true,
+      "hauptkategorie": "c68019c7-d498-4403-9810-bdcd3bbe5538",
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.gewalttatart",
+    "pk": "ec7a33ed-4961-480e-ab97-99fb9109dfe4",
+    "fields": {
+      "name": "Sexuelle Belästigung im Privaten",
+      "ist_unterkategorie": true,
+      "hauptkategorie": "c68019c7-d498-4403-9810-bdcd3bbe5538",
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "c69f95a4-dc2a-4924-826c-3124ea68013b",
+    "fields": {
+      "name": "Depression",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "812fc86a-ba65-4e83-8d39-e2f19f333905",
+    "fields": {
+      "name": "Angststörung",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "6acc746c-1418-49a6-9279-21b2b961c4cf",
+    "fields": {
+      "name": "PTBS",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "d3d50ef8-9a39-4f21-bf30-34756ee344d4",
+    "fields": {
+      "name": "Andere Diagnose",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "4acc6bfc-d98c-4ff9-9830-494aeaeddccc",
+    "fields": {
+      "name": "Burn-Out",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "fc556afe-b7ed-4e3b-b37a-4feee88a73d9",
+    "fields": {
+      "name": "Schlafstörungen",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "d8354074-acdc-47b8-9dc7-8d728d705e93",
+    "fields": {
+      "name": "Sucht/Abhängigkeit",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "61cb5386-d26e-4870-8269-fdf6f395d8e1",
+    "fields": {
+      "name": "Kommunikationsschwierigkeiten",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "071b0bd3-d302-4643-9c74-95b23c20ab7f",
+    "fields": {
+      "name": "Vernachlässigung alltäglicher Dinge",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "8172fee4-1a2b-40fe-bf28-9dcf806255d1",
+    "fields": {
+      "name": "Schmerzen",
+      "kategorie": "KOERPERLICH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "8b05e814-769d-4790-a34b-d5a485829e7b",
+    "fields": {
+      "name": "Lähmungen",
+      "kategorie": "KOERPERLICH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "2c354697-12b6-4d4d-a2d1-11e332f991e8",
+    "fields": {
+      "name": "Krankheit",
+      "kategorie": "KOERPERLICH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "dccf08c6-da40-457f-8e18-a48c7edeb41b",
+    "fields": {
+      "name": "Dauerhafte körperliche Beeinträchtigung",
+      "kategorie": "DAUERHAFT",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "94c299f1-0cf6-4a47-b83b-3a363ab992d2",
+    "fields": {
+      "name": "Finanzielle Folgen",
+      "kategorie": "FINANZIELL",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "734d2e91-32e9-4ec4-bc12-2bf127f5300c",
+    "fields": {
+      "name": "Arbeitseinschränkung/Arbeitsunfähigkeit",
+      "kategorie": "FINANZIELL",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "1ab791a7-a045-4b2c-91de-ebc0d98f218c",
+    "fields": {
+      "name": "Verlust Arbeitsstelle",
+      "kategorie": "FINANZIELL",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "7f5d37b1-bf0d-48a7-a616-31d87e9c0824",
+    "fields": {
+      "name": "Soziale Isolation",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "02618696-651a-428b-b9b2-5dee5e7190bc",
+    "fields": {
+      "name": "Suizidalität",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "19d8f6b8-c976-43d7-812c-791080a511a9",
+    "fields": {
+      "name": "Weiteres",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  },
+  {
+    "model": "core.folgendergewalt",
+    "pk": "d7b7c09d-3358-486e-84f0-25338f23b3cf",
+    "fields": {
+      "name": "Keine Angabe",
+      "kategorie": "PSYCHISCH",
+      "ist_unterkategorie": false,
+      "hauptkategorie": null,
+      "beschreibung": ""
+    }
+  }
+]
