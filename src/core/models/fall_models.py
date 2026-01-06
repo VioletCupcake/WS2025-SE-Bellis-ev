@@ -8,6 +8,9 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
+from core.validators.json_validators import validate_taeterinnen_details
+
 
 class Fall(models.Model):
     """
@@ -102,12 +105,35 @@ class Fall(models.Model):
         verbose_name = 'Fall'
         verbose_name_plural = 'Fälle'
 
-    
     def __str__(self):
         """String representation using alias from PersonenbezogeneDaten if exists."""
         if hasattr(self, 'personenbezogene_daten'):
             return self.personenbezogene_daten.alias  # type: ignore[attr-defined]
         return f"Fall {self.fall_id}"
+
+    def clean(self):
+        """Cross-field validation for Fall model."""
+        super().clean()
+        errors = {}
+        
+        # Closed cases must have closure date
+        if self.ist_abgeschlossen and not self.abschlussdatum:
+            errors['abschlussdatum'] = ['Abschlussdatum is required when case is closed']
+        
+        # informationsquelle "andere Quelle" requires details
+        if self.informationsquelle == "andere Quelle":
+            if not self.informationsquelle_andere_details or \
+               not self.informationsquelle_andere_details.strip():
+                errors['informationsquelle_andere_details'] = [
+                    'Details required when informationsquelle is "andere Quelle"'
+                ]
+        
+        # Dolmetschung hours must be non-negative
+        if self.anzahl_dolmetschungen_stunden < 0:
+            errors['anzahl_dolmetschungen_stunden'] = ['Cannot be negative']
+        
+        if errors:
+            raise ValidationError(errors)
 
     
     def close(self):
@@ -310,7 +336,39 @@ class PersonenbezogeneDaten(models.Model):
     
     def __str__(self):
         return f"Daten für {self.alias}"
-
+    
+    def clean(self):
+        """Cross-field validation for PersonenbezogeneDaten model."""
+        super().clean()
+        errors = {}
+        
+        # alter_keine_angabe = True requires alter = NULL
+        if self.alter_keine_angabe and self.alter is not None:
+            errors['alter'] = ['Must be empty when "keine Angabe" is selected']
+        
+        # grad_der_behinderung requires schwerbehinderung = "JA"
+        if self.grad_der_behinderung is not None:
+            if self.schwerbehinderung != "JA":
+                errors['grad_der_behinderung'] = [
+                    'Only valid when Schwerbehinderung is "Ja"'
+                ]
+        
+        # form_der_behinderung requires schwerbehinderung = "JA"
+        if self.form_der_behinderung:
+            if self.schwerbehinderung != "JA":
+                errors['form_der_behinderung'] = [
+                    'Only valid when Schwerbehinderung is "Ja"'
+                ]
+        
+        # staatsangehoerigkeit_land requires staatsangehoerigkeit_deutsch = False
+        if self.staatsangehoerigkeit_land:
+            if self.staatsangehoerigkeit_deutsch is True:
+                errors['staatsangehoerigkeit_land'] = [
+                    'Only valid when staatsangehoerigkeit_deutsch is False'
+                ]
+        
+        if errors:
+            raise ValidationError(errors)
 
 ### Beratung and Gewalttat models on new branch
 
@@ -532,8 +590,11 @@ class Gewalttat(models.Model):
     taeterinnen_details = models.JSONField(
         default=list,
         blank=True,
+        validators=[validate_taeterinnen_details],  # ADD THIS LINE
         help_text="Array of objects with geschlecht and verhaeltnis_zur_ratsuchenden_person"
     )
+    
+    
     
     # Violence type - linked via M2M junction table (Gewalttat_GewalttatArt)
     # Access via: gewalttat.gewalttat_gewalttatart_set.all()
@@ -601,3 +662,62 @@ class Gewalttat(models.Model):
         if self.zeitraum_von:
             return f"Gewalttat {self.zeitraum_von} - {self.fall}"
         return f"Gewalttat {self.gewalttat_id} - {self.fall}"
+    
+    def clean(self):
+        """Cross-field validation for Gewalttat model."""
+        super().clean()
+        errors = {}
+        
+        # zahl_der_vorfaelle = "genaue Zahl" requires zahl_der_vorfaelle_genau
+        if self.zahl_der_vorfaelle == "genaue Zahl":
+            if self.zahl_der_vorfaelle_genau is None:
+                errors['zahl_der_vorfaelle_genau'] = [
+                    'Required when "genaue Zahl" is selected'
+                ]
+        
+        # anzahl_taeterinnen = "genaue Zahl" requires anzahl_taeterinnen_genau
+        if self.anzahl_taeterinnen == "genaue Zahl":
+            if self.anzahl_taeterinnen_genau is None:
+                errors['anzahl_taeterinnen_genau'] = [
+                    'Required when "genaue Zahl" is selected'
+                ]
+        
+        # zeitraum_von must be before or equal to zeitraum_bis
+        if self.zeitraum_von and self.zeitraum_bis:
+            if self.zeitraum_von > self.zeitraum_bis:
+                errors['zeitraum_von'] = ['Start date cannot be after end date']
+        
+        # davon_direkt_betroffen cannot exceed mitbetroffene_kinder
+        if self.davon_direkt_betroffen > self.mitbetroffene_kinder:
+            errors['davon_direkt_betroffen'] = [
+                'Cannot exceed total number of affected children'
+            ]
+        
+        # Validate taeterinnen_details JSON structure
+        if self.taeterinnen_details:
+            try:
+                validate_taeterinnen_details(self.taeterinnen_details)
+            except ValidationError as e:
+                # e.message might be a string or dict, normalize to list
+                if isinstance(e.message, str):
+                    errors['taeterinnen_details'] = [e.message]
+                elif isinstance(e.message, list):
+                    errors['taeterinnen_details'] = e.message
+                else:
+                    errors['taeterinnen_details'] = [str(e.message)]
+        
+        # alter_tat_keine_angabe = True requires alter_zum_zeitpunkt_der_tat = NULL
+        if self.alter_tat_keine_angabe and self.alter_zum_zeitpunkt_der_tat is not None:
+            errors['alter_zum_zeitpunkt_der_tat'] = [
+                'Must be empty when "keine Angabe" is selected'
+            ]
+        
+        # zeitraum_keine_angabe = True requires both zeitraum fields = NULL
+        if self.zeitraum_keine_angabe:
+            if self.zeitraum_von is not None or self.zeitraum_bis is not None:
+                errors['zeitraum_keine_angabe'] = [
+                    'Both zeitraum fields must be empty when "keine Angabe" is selected'
+                ]
+        
+        if errors:
+            raise ValidationError(errors)
