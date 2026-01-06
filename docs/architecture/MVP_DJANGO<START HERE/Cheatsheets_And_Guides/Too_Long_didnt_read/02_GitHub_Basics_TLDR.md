@@ -9,7 +9,7 @@
 
 ### Repository (Repo)
 - Container for project files and history
-- B-EV repo: https://github.com/VXXXXtCXXXXXke/WS2025-SE-B-ev/
+- B-EV repo: https://github.com/VioletCupcake/WS2025-SE-Bellis-ev/
 
 ### Branches
 - Parallel versions of code
@@ -32,8 +32,8 @@ feature/auth         ●──●
 ## Essential Git Commands
 
 ### Clone Repository (First Time)
-git clone https://github.com/VXXXXtCXXXXXke/WS2025-SE-B-ev.git
-cd WS2025-SE-B-ev
+git clone https://github.com/VioletCupcake/WS2025-SE-Bellis-ev.git
+cd WS2025-SE-Bellis-ev
 
 ### Check Current Branch
 git branch

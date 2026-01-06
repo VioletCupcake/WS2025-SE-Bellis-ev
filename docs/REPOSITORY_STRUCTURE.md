@@ -114,9 +114,36 @@ WS2025-SE-Bellis-ev/
 │       ├── __init__.py
 │       ├── admin.py                 # Django admin configuration
 │       ├── apps.py                  # App configuration
-│       ├── models.py                # Django models
+│       ├── models.py                # Legacy models.py (redirects to models/ package)
 │       ├── views.py                 # Django views
 │       ├── tests.py                 # Unit tests
+│       ├── fixtures/                # JSON fixtures for test data
+│       │   └── (empty, for JSON data files)
+│       │
+│       ├── forms/                   # Django forms package
+│       │   ├── __init__.py
+│       │   ├── fall_forms.py         # Fall/Gewalttat-related forms
+│       │   └── user_forms.py         # User-related forms
+│       │
+│       ├── managers/                # Custom managers and services
+│       │   ├── __init__.py
+│       │   ├── fall_manager.py       # Fall management logic
+│       │   └── session_manager.py    # Session/consultation management
+│       │
+│       ├── models/                  # Modular models package
+│       │   ├── __init__.py           # Aggregates imports from submodules
+│       │   ├── fall_models.py        # Fall, PersonenbezogeneDaten, Beratung, Gewalttat
+│       │   ├── user_models.py        # User-related models
+│       │   └── reference_models.py   # Reference data models (GewalttatArt, etc.)
+│       │
+│       ├── services/                # Business logic services
+│       │   ├── __init__.py
+│       │   └── validation_service.py # Core validation logic
+│       │
+│       ├── templates/               # HTML templates
+│       │   └── core/                # Templates for core app
+│       │       └── (empty, for HTML files)
+│       │
 │       └── migrations/              # Database migrations
 │           └── __init__.py
 │
@@ -137,7 +164,13 @@ WS2025-SE-Bellis-ev/
 | `docs/team_documentation/` | Team-specific guides and documentation |
 | `src/` | Python source code (Django project) |
 | `src/B_EV/` | Main Django project configuration |
-| `src/core/` | Core Django application with models, views, tests |
+| `src/core/` | Core Django application (Phase 1 MVP implementation) |
+| `src/core/models/` | Modular models package (Fall, PersonenbezogeneDaten, Beratung, Gewalttat) |
+| `src/core/forms/` | Django forms for Fall and User interactions |
+| `src/core/managers/` | Custom managers for complex business logic |
+| `src/core/services/` | Business logic services (validation, etc.) |
+| `src/core/fixtures/` | Test data fixtures (JSON files) |
+| `src/core/templates/` | HTML templates for core app |
 | `test/` | Testing resources and documentation |
 
 ## Key Files
@@ -148,6 +181,27 @@ WS2025-SE-Bellis-ev/
 | `VERSIONING.md` | Project versioning guidelines |
 | `requirements.txt` | Python package dependencies |
 | `LICENSE` | Project license terms |
+| `.env` | Environment variables (database, Django settings) |
+| `.coderabbit.yaml` | CodeRabbit configuration for code reviews |
+
+## Phase 1 Implementation Status
+
+**Core Models Implemented:**
+- `Fall` - Main case entity with metadata and aggregate counters
+- `PersonenbezogeneDaten` - 1:1 personal demographic data (privacy by design)
+- `Beratung` - Individual consultation sessions (linked to Fall)
+- `Gewalttat` - Violence incident records with multiple fields
+
+**Database:**
+- PostgreSQL configured and running
+- Database `bev_dev` and user `bev_user` created
+- Django settings configured with environment variables (.env)
+
+**Project Structure:**
+- Modular models package under `src/core/models/`
+- Separate packages for forms, managers, and services
+- Fixtures and templates directories ready for content
+- Database migrations initialized
 | `docs/STYLEGUIDE.md` | Documentation style guidelines |
 | `docs/architecture/MVP_Definition.md` | MVP scope and definitions |
 | `src/manage.py` | Django project management interface |
