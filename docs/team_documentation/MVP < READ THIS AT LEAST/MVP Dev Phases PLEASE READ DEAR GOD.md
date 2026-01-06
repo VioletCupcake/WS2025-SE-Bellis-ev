@@ -37,7 +37,6 @@ Phase 3C	Templates (UI)
 
 These usually have sub-phases, but thats the general idea. I'll be taking Phase 1 and possible 2, but we neeeeeeed people for the UI
 
-
 # NOTE: Current Phase 2 Planning
 
 Phase 2A: Validation foundation -> needed so the rest can run smooth and safe
