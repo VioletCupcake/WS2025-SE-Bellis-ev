@@ -60,3 +60,8 @@ __pycache__/
 .env
 db.sqlite3
 .vscode/
+
+# React / Node
+src/frontend/node_modules/
+src/frontend/build/
+src/frontend/.env
