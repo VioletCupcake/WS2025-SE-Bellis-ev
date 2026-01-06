@@ -63,5 +63,13 @@ Another reason why good initial instructions, short concise answers and consiste
 For that reason I use Master-Prompts for all my Projects. They contain Style Guidelines, as well as key System, User and Project context that may be important to give you the answers that actually fit your SetUp. I will provide a part of my Master Prompt in this repo.
 
 #### So should we write this project with AI?
-No. You can, however, use it for simpler sections or generate examples to see how implementation works. You can use it to find and explain bugs you dont see yourself.
+No. You can, however, use it for simple sections, generate examples to see how implementation works. You can use it to find and explain bugs you dont see yourself.
 As with work by others, you should always double check the shit you get.
+From my experience, good generative AI models can be used to write decent, working code - i do it all the time.
+The issue is that you still need to understand how to create software.
+You need to know what you want, what you dont want, how to prompt, and how to control that the results you get actually match what you need.
+
+#### Risks
+AI is, for example, notoriously bad with safety protocols unless you actively ensure that they are implemented.
+AI, especially GPT, also tends to loose context and hallucinate quickly
+AI also tends to overengineer things, or do things terribly inefficiently (tbf i do that too.)
