@@ -26,7 +26,7 @@ c) pull the repo                    git pull origin cleanupmvp/core_implementati
 - if you dont know where we are, or what you can do: Ask
 - for real, we have a group chat
 
-### DEVELOPMENT PHASES
+DJ### DEVELOPMENT PHASES
 Idk, i have roughly divided the process into the following phases (they changed over time)
 
 Phase 1	    Data models (backend)    <------------ WE ARE HERE, ALMOST FINISHED
@@ -42,4 +42,5 @@ These usually have sub-phases, but thats the general idea. I'll be taking Phase 
 
 Phase 2A: Validation foundation -> needed so the rest can run smooth and safe
 Phase 2B : FallManager -> core MVP functionality
+Phase 2C : Create Fixture -> Prepare for Phase 3
 

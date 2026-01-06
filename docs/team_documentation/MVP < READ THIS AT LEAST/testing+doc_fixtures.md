@@ -102,3 +102,5 @@ False
 >>> art = GewalttatArt.objects.get(name='Sexuelle Belästigung')
 >>> print(art.unterkategorien.count())  # Should print: 3
 3
+
+
