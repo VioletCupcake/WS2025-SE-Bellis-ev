@@ -1,0 +1,70 @@
+.LoginContainer {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f2f5;
+}
+
+.LoginBox {
+  background: white;
+  padding: 2rem;
+  border-radius: 18px;
+  width: 300px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.LoginLogo {
+  width: 230px;
+  height: auto;
+  margin: 0 auto 1rem auto;
+  margin-bottom: 18px;
+}
+
+.LoginForm input {
+  width: 100%;
+  height: min-content;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 12px;
+  border-color: #ffffff;
+  border-style: solid;
+  outline: none;
+  background-color: #80808033;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+input::placeholder {
+  font-weight: bold;
+}
+
+.LoginForm input::focus::placeholder {
+  opacity: 0;
+}
+
+.ForgotPassword {
+  font-size: 0.8rem;
+  text-align: right;
+  display: block;
+  margin-bottom: 4rem;
+  color: #2A2A2A;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.LoginForm button {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #294D9D;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+}
