@@ -296,7 +296,7 @@ class PersonenbezogeneDaten(models.Model):
             MinValueValidator(0, message="GdB muss mindestens 0 sein"),
             MaxValueValidator(100, message="GdB darf höchstens 100 sein")
         ],
-        help_text="Grad der Behinderung (0-100 is the system used in germany)"
+        help_text="Grad der Behinderung (0-100 is the system used in Germany)"
     )
     # Form & Grad nur visible if Schwerbehinderung == 'JA'
     
@@ -375,33 +375,36 @@ class Beratung(models.Model):
     def save(self, *args, **kwargs):
         """
         Override save to update Fall aggregate counters.
-        Updates beratungsanzahl and letzte_beratung on Fall.
+        Updates beratungsanzahl and letzte_beratung on parent Fall.
+        Also updates letzte_bearbeitung to track case activity.
         """
-        # Check if this is a new Beratung (not an update, so we dont double count)
+        # Check if this is a new Beratung (not an update, so we don't double count)
         is_new = self._state.adding
         
         # Save the Beratung first
         super().save(*args, **kwargs)
         
-        # Update Fall aggregates only for new Beratungen
+        # Recalculate count only for new records
         if is_new:
-            # Increment beratungsanzahl
-            self.fall.beratungen.count()  # type: ignore[attr-defined]
             self.fall.beratungsanzahl = self.fall.beratungen.count()  # type: ignore[attr-defined]
-            
-            # Update letzte_beratung to most recent date
-            latest_beratung = self.fall.beratungen.order_by('-datum').first()  # type: ignore[attr-defined]
-            if latest_beratung:
-                self.fall.letzte_beratung = latest_beratung.datum
-            
-            # Save Fall with updated aggregates
-            self.fall.save(update_fields=['beratungsanzahl', 'letzte_beratung'])
+            update_fields = ['beratungsanzahl', 'letzte_beratung', 'letzte_bearbeitung']
+        else:
+            update_fields = ['letzte_beratung', 'letzte_bearbeitung']
+        
+        # Always update letzte_beratung to most recent date
+        latest_beratung = self.fall.beratungen.order_by('-datum').first()  # type: ignore[attr-defined]
+        self.fall.letzte_beratung = latest_beratung.datum if latest_beratung else None
+        
+        # Save Fall with appropriate update_fields
+        # letzte_bearbeitung will auto-update because it's in update_fields
+        self.fall.save(update_fields=update_fields)
+
+
     
     def delete(self, *args, **kwargs) -> tuple[int, dict[str, int]]:
         """
         Override delete to update Fall aggregate counters.
         Returns tuple of (number_deleted, {model_name: count}) per Django convention.
-        praise be to copilot for fixing my errors. but looks good i think
         """
         fall = self.fall
         
@@ -416,11 +419,11 @@ class Beratung(models.Model):
         fall.letzte_beratung = latest_beratung.datum if latest_beratung else None
         
         # Save Fall with updated aggregates
-        fall.save(update_fields=['beratungsanzahl', 'letzte_beratung'])
+        fall.save(update_fields=['beratungsanzahl', 'letzte_beratung', 'letzte_bearbeitung'])
         
         # Return Django's expected tuple
         return deletion_result
-    
+
 
 class Gewalttat(models.Model):
     """
