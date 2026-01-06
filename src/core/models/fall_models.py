@@ -10,6 +10,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from core.validators.json_validators import validate_taeterinnen_details
+from typing import TYPE_CHECKING
 
 
 class Fall(models.Model):
@@ -43,6 +44,9 @@ class Fall(models.Model):
         ('ANDERE', 'andere Quelle'),
         ('KEINE_ANGABE', 'keine Angabe'),
     ]
+
+
+
     
     # Primary key
     fall_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -94,6 +98,7 @@ class Fall(models.Model):
     
     # General notes
     weitere_notizen = models.TextField(blank=True)
+
     
     class Meta:
         db_table = 'fall'
@@ -542,6 +547,15 @@ class Gewalttat(models.Model):
         Fall,
         on_delete=models.CASCADE,
         related_name='gewalttaten'
+    )
+    
+    # Many-to-many relationship with GewalttatArt via explicit junction table
+    gewalttat_arten = models.ManyToManyField(
+        'GewalttatArt',
+        through='Gewalttat_GewalttatArt',
+        related_name='gewalttaten',
+        blank=True,
+        help_text="Violence types linked via junction table Gewalttat_GewalttatArt"
     )
     
     # Age at time of incident

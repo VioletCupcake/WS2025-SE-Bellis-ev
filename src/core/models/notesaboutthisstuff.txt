@@ -1,2 +1,8 @@
 Sooo just you know, i split up the models (the models.py in main just refers over here, hopefully)
 because otherwise this would be fucking Huuuuuuuge
+
+I pulled the "weitere Daten" up into the Fall main model.
+Beratung and Gewalttat are in the fall_models
+GewalttatArt and FolgenDerGewalt will be put in refrence_models
+to be referenced. By Fall.
+Genius i know

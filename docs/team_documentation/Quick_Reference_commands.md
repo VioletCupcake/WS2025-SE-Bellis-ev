@@ -1,8 +1,22 @@
 # DJANGO MANAGEMENT
-python manage.py runserver              # Start development server
-python manage.py makemigrations         # Create migration files
-python manage.py migrate                # Apply migrations
-python manage.py makemigrations --dry-run --verbosity 3     # or 2, or 1, but is a dry test of migration with varying verbosity
+# Start development server
+python manage.py runserver 
+            
+# Create new migration (auto-numbered)
+python manage.py makemigrations
+# Create migration with custom name
+python manage.py makemigrations --name your_description
+# Show which migrations are applied
+python manage.py showmigrations
+# Preview SQL for specific migration
+python manage.py sqlmigrate <app> <migration_number>
+# Apply all pending migrations
+python manage.py migrate
+# Roll back to specific migration
+python manage.py migrate core 0005  # reverts 0006
+# Check for issues without making changes
+python manage.py check
+
 python manage.py createsuperuser        # Create admin user
 python manage.py shell                  # Interactive Python shell with Django
 python manage.py dbshell                # Direct database shell

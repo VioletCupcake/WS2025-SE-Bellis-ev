@@ -24,7 +24,7 @@ python manage.py runserver
    - Database browser
 
 2. SQLTools (by Matheus Teixeira)
-   - Universal database interface
+   - Universal datab ase interface
    - Visual query builder
 
 ## Connection Setup in SQLTools
