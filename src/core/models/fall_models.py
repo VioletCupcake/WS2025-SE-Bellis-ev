@@ -7,6 +7,7 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ObjectDoesNotExist
 
 class Fall(models.Model):
     """
@@ -419,3 +420,181 @@ class Beratung(models.Model):
         
         # Return Django's expected tuple
         return deletion_result
+    
+
+class Gewalttat(models.Model):
+    """
+    longest part of this, like 18 fields overall?
+    violence incident linked to a Fall.
+    One Fall can have multiple Gewalttaten (1:N relationship).
+    Many-to-many relationship with GewalttatArt via junction table.
+    """
+    # Zahl der Vorfälle choices
+    VORFAELLE_CHOICES = [
+        ('EINMALIG', 'einmalig'),
+        ('MEHRERE', 'mehrere'),
+        ('GENAUE_ZAHL', 'genaue Zahl'),
+        ('KEINE_ANGABE', 'keine Angabe'),
+    ]
+    
+    # Anzahl Täter:innen choices
+    TAETERINNEN_ANZAHL_CHOICES = [
+        ('1', '1'),
+        ('MEHRERE', 'mehrere'),
+        ('GENAUE_ZAHL', 'genaue Zahl'),
+        ('KEINE_ANGABE', 'keine Angabe'),
+    ]
+    
+    # Tatort choices
+    TATORT_CHOICES = [
+        ('LEIPZIG', 'Leipzig'),
+        ('LEIPZIG_LAND', 'Leipzig Land'),
+        ('NORDSACHSEN', 'Nordsachsen'),
+        ('SACHSEN', 'Sachsen'),
+        ('DEUTSCHLAND', 'Deutschland'),
+        ('AUSLAND', 'Ausland'),
+        ('AUF_DER_FLUCHT', 'auf der Flucht'),
+        ('IM_HERKUNFTSLAND', 'im Herkunftsland'),
+        ('KEINE_ANGABE', 'keine Angabe'),
+    ]
+    
+    # Anzeige choices
+    ANZEIGE_CHOICES = [
+        ('JA', 'Ja'),
+        ('NEIN', 'Nein'),
+        ('NOCH_NICHT_ENTSCHIEDEN', 'noch nicht entschieden'),
+        ('KEINE_ANGABE', 'keine Angabe'),
+    ]
+    
+    # reusable Yes/No/No info choices (for medical care, evidence collection)
+    JA_NEIN_KEINE_ANGABE_CHOICES = [
+        ('JA', 'Ja'),
+        ('NEIN', 'Nein'),
+        ('KEINE_ANGABE', 'keine Angabe'),
+    ]
+    
+    # Primary key
+    gewalttat_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Foreign key to Fall (CASCADE delete)
+    fall = models.ForeignKey(
+        Fall,
+        on_delete=models.CASCADE,
+        related_name='gewalttaten'
+    )
+    
+    # Age at time of incident
+    alter_zum_zeitpunkt_der_tat = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(120) # i think thats a reasonable maximum age lol
+        ]
+    )
+    alter_tat_keine_angabe = models.BooleanField(default=False)
+
+    # Time period of incident(s)
+    zeitraum_von = models.DateField(null=True, blank=True)
+    zeitraum_bis = models.DateField(null=True, blank=True)
+    zeitraum_keine_angabe = models.BooleanField(default=False)
+    
+    # number of incidents
+    zahl_der_vorfaelle = models.CharField(
+        max_length=20,
+        choices=VORFAELLE_CHOICES,
+        null=True,
+        blank=True
+    )
+    zahl_der_vorfaelle_genau = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)]
+    )
+    
+    # Number of perpetrators
+    anzahl_taeterinnen = models.CharField(
+        max_length=20,
+        choices=TAETERINNEN_ANZAHL_CHOICES,
+        null=True,
+        blank=True
+    )
+    anzahl_taeterinnen_genau = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)]
+    )
+    
+    # Perpetrator details (JSON array)
+    taeterinnen_details = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of objects with geschlecht and verhaeltnis_zur_ratsuchenden_person"
+    )
+    
+    # Violence type - linked via M2M junction table (Gewalttat_GewalttatArt)
+    # Access via: gewalttat.gewalttat_gewalttatart_set.all()
+    
+    # Additional details for 'Andere' violence type
+    art_der_gewalt_andere_details = models.TextField(blank=True)
+    
+    # As you see, we refer back to the choices defined above
+    # I read that thats how django projects are usually structured
+    # Also makes it easier to read and maintain
+    # Location of incident
+    tatort = models.CharField(
+        max_length=30,
+        choices=TATORT_CHOICES,
+        null=True,
+        blank=True
+    )
+    
+    # Legal action
+    anzeige = models.CharField(
+        max_length=30,
+        choices=ANZEIGE_CHOICES,
+        null=True,
+        blank=True
+    )
+    
+    # Medical response
+    medizinische_versorgung = models.CharField(
+        max_length=20,
+        choices=JA_NEIN_KEINE_ANGABE_CHOICES,
+        null=True,
+        blank=True
+    )
+    
+    vertrauliche_spurensicherung = models.CharField(
+        max_length=20,
+        choices=JA_NEIN_KEINE_ANGABE_CHOICES,
+        null=True,
+        blank=True
+    )
+    
+    # Affected children
+    mitbetroffene_kinder = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    davon_direkt_betroffen = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    
+    # Notes
+    gewalt_notizen = models.TextField(blank=True)
+    
+    class Meta:
+        db_table = 'gewalttat'
+        ordering = ['-zeitraum_von']  # Most recent first
+        verbose_name = 'Gewalttat'
+        verbose_name_plural = 'Gewalttaten'
+        indexes = [
+            models.Index(fields=['fall', 'zeitraum_von']),
+        ]
+    
+    def __str__(self):
+        if self.zeitraum_von:
+            return f"Gewalttat {self.zeitraum_von} - {self.fall}"
+        return f"Gewalttat {self.gewalttat_id} - {self.fall}"
