@@ -52,6 +52,11 @@ INSTALLED_APPS = [
 # custom user model
 AUTH_USER_MODEL = 'core.User'
 
+LOGIN_URL = '/login/'  # ← ADD THIS
+LOGIN_REDIRECT_URL = '/cases/'  # ← ADD THIS (where to go after successful login)
+LOGOUT_REDIRECT_URL = '/login/'  # ← ADD THIS (where to go after logout)
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -119,6 +124,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Authentication Settings (add near bottom of settings.py)
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/cases/'  # ← This line specifically
+LOGOUT_REDIRECT_URL = '/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

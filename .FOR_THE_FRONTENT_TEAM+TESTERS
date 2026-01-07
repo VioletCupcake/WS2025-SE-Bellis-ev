@@ -1,0 +1,235 @@
+Hi.
+its like, 4:00
+and i more or less am done
+Like. It works, but i dont have the energy to test shit right now so its up to YOU to do that.
+heres a list
+
+Status: Backend functional, frontend styling/UX incomplete
+SETUP & ACCESS
+1. Repository Access
+
+bash
+# Clone repository (if not already done)
+git clone <repository-url>
+cd WS2025-SE-Bellis-ev
+
+# Create Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# OR
+venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+2. Database Setup
+
+bash
+cd src
+
+# Run migrations
+python manage.py migrate
+
+# Load test data (users + reference data)
+python manage.py loaddata fixtures/seed_data.json
+
+Test Users Created:
+
+    user_basis / test123 (BASIS role - basic permissions)
+
+    user_erweitert / test123 (ERWEITERT - can delete, manage reference data)
+
+    user_admin / test123 (ADMIN - full access)
+
+3. Start Development Server
+
+bash
+# From src/ directory
+python manage.py runserver
+
+# Server runs at: http://127.0.0.1:8000/
+# Or specify port: python manage.py runserver 8001
+
+4. Access Application
+
+    Main App: http://localhost:8000/cases/
+
+    Login Page: http://localhost:8000/login/
+
+    Admin Interface: http://localhost:8000/admin/
+
+
+TODO:
+TEST EVERYTHING - test the stuff we want to demonstrate
+
+FRONTEND team: Get a new branch and get to work
+
+====
+Case List Template (Priority: HIGH)
+File: src/core/templates/core/case_list.html
+Current State: Functional but unstyled
+
+Testing:
+    Navigate to http://localhost:8000/cases/
+    Verify table displays existing test cases
+    Click alias → should go to case detail
+    Click "Neuer Fall" → should go to create form
+    Check search functionality (if exists)
+
+====
+Case Detail Template (Priority: HIGH)
+File: src/core/templates/core/case_detail.html
+
+Requirements:
+
+    Section 1: Case metadata (Beratungsstelle, Status, Dates)
+    Section 2: Personenbezogene Daten (demographics) - collapsible card
+    Section 3: Beratungen list (table with dates, types, locations)
+        "Neue Beratung" button
+        Edit/Delete actions per session
+    Section 4: Gewalttaten list (table with dates, types, perpetrator count)
+        "Neue Gewalttat" button
+        Edit/Delete actions per incident
+
+    Action Buttons (top-right):
+        "Bearbeiten" (Edit) - all users
+        "Abschließen" (Close) - if not closed
+        "Löschen" (Delete) - only ERWEITERT/ADMIN
+        Permission-based visibility
+
+Testing:
+    Login as user_basis
+    Navigate to any case detail
+    Verify all sections display
+    Verify "Löschen" button NOT visible
+    Logout, login as user_admin
+    Verify "Löschen" button IS visible
+    Click "Neue Beratung" → form should load
+    Click "Bearbeiten" → edit form should load
+
+====
+Form Templates (Priority: CRITICAL)
+
+Files:
+    case_form.html (Case creation)
+    case_edit.html (Case editing - may reuse case_form.html)
+    beratung_form.html (Counseling session)
+    gewalttat_form.html (Violence incident)
+
+Requirements:
+    Field labels in German
+    Required fields marked with asterisk (*)
+    Help text displayed below fields where applicable
+    Enum fields use select dropdowns (not text input)
+    Date fields have date picker widget
+    Multi-select fields (GewalttatArt) styled as checkboxes or multi-select dropdown
+    TextArea fields for notes (not single-line input)
+    Submit/Cancel buttons (Cancel returns to previous page)
+    Validation errors display inline (red text below field)
+    Form-level errors display at top
+    Conditional fields hidden/shown based on logic (JavaScript):
+        informationsquelle="andere Quelle" → show informationsquelle_andere_details
+        schwerbehinderung="JA" → show grad_der_behinderung + form_der_behinderung
+
+
+Testing - Case Creation:
+    Navigate to http://localhost:8000/cases/create/
+    Submit empty form → verify required field errors display
+    Fill form with valid data
+    Submit → should redirect to case detail
+    Verify new case appears in database
+
+Testing - Gewalttat Form:
+    Navigate to existing case detail
+    Click "Neue Gewalttat"
+    Verify multi-select for violence types renders as checkboxes
+    Select multiple types
+    Submit → verify violence incident created with all selected types
+
+=====
+Delete Confirmation Templates (Priority: MEDIUM)
+
+Files:
+    case_delete_confirm.html
+    beratung_delete_confirm.html
+    gewalttat_delete_confirm.html
+    case_close_confirm.html
+
+Requirements:
+    Warning message explaining action
+    Display what will be deleted (case alias, session date, etc.)
+    Two buttons: "Ja, löschen" (danger/red) and "Abbrechen" (secondary/gray)
+    For case deletion: Show soft vs hard delete options based on permissions
+    Explanation of soft delete (archiviert) vs hard delete (permanent)
+
+Testing:
+    Navigate to case detail
+    Click "Löschen" (as ADMIN user)
+    Verify confirmation page loads
+    Verify soft/hard delete options display
+    Click "Abbrechen" → returns to case detail
+    Click "Ja, löschen" (soft) → case archived
+    Verify archived case no longer in active list
+
+=====
+
+Django Messages Framework Styling (Priority: HIGH)
+
+Implementation: Add to base.html
+
+Requirements:
+    Display success messages (green alert)
+    Display error messages (red alert)
+    Display info messages (blue alert)
+    Auto-dismiss after 5 seconds (JavaScript)
+    Positioned at top of content area (not blocking navigation)
+
+Example Code (Bootstrap 5):
+
+xml
+{% if messages %}
+<div class="messages-container">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+Testing:
+    Create a new case
+    Verify success message appears: "Fall '[alias]' erfolgreich erstellt"
+    Try invalid form submission
+    Verify error message appears
+    Check messages auto-dismiss after 5 seconds
+
+Acceptance Criteria:
+    Messages display correctly styled
+    Auto-dismiss works
+    Multiple messages stack correctly
+    Messages don't block content
+
+======
+
+German Localization (Priority: HIGH)
+
+Requirements:
+    All UI text in German
+    Date format: DD.MM.YYYY
+    Number format: German locale (comma as decimal separator)
+    Enum display values in German (already in backend)
+    Error messages in German (Django forms handle this if LANGUAGE_CODE = 'de-de' in settings)
+
+Testing:
+    Check all pages for English text (should be none)
+    Verify dates display as 07.01.2026 (not 2026-01-07)
+    Check form validation errors are in German
+
+Acceptance Criteria:
+
+    100% German UI
+    Correct date/number formatting
+    No English fallback text
+
