@@ -63,6 +63,12 @@ TODO:
 TEST EVERYTHING - test the stuff we want to demonstrate
 
 FRONTEND team: Get a new branch and get to work
+You can find my current test results under:
+/home/violet/repos/WS2025-SE-Bellis-ev/docs/team_documentation/testing
+
+Current Issues for Frontend:
+The forms are very simplistic and in some aspects broken. I wil try to fix validation and backend issues for the demonstration, but things like conditional field displays and CSS / JAva script are things you have to do
+
 
 ====
 Case List Template (Priority: HIGH)
