@@ -343,27 +343,34 @@ class PersonenbezogeneDaten(models.Model):
         return f"Daten für {self.alias}"
     
     def clean(self):
-        """Cross-field validation for PersonenbezogeneDaten model."""
+        """
+        Cross-field validation for PersonenbezogeneDaten model.
+        """
         super().clean()
         errors = {}
         
-        # alter_keine_angabe = True requires alter = NULL
+        # alter_keine_angabe=True requires alter=NULL
         if self.alter_keine_angabe and self.alter is not None:
-            errors['alter'] = ['Must be empty when "keine Angabe" is selected']
+            errors['alter'] = "Must be empty when 'keine Angabe' is selected"
         
-        # grad_der_behinderung requires schwerbehinderung = "JA"
+        # grad_der_behinderung requires schwerbehinderung='JA'
         if self.grad_der_behinderung is not None:
-            if self.schwerbehinderung != "JA":
-                errors['grad_der_behinderung'] = [
-                    'Only valid when Schwerbehinderung is "Ja"'
-                ]
+            if self.schwerbehinderung != 'JA':  # ← FIXED: Compare to string 'JA', not boolean
+                errors['grad_der_behinderung'] = "Only valid when Schwerbehinderung is 'Ja'"
         
-        # form_der_behinderung requires schwerbehinderung = "JA"
+        # form_der_behinderung requires schwerbehinderung='JA'
         if self.form_der_behinderung:
-            if self.schwerbehinderung != "JA":
-                errors['form_der_behinderung'] = [
-                    'Only valid when Schwerbehinderung is "Ja"'
-                ]
+            if self.schwerbehinderung != 'JA':  # ← FIXED: Compare to string 'JA'
+                errors['form_der_behinderung'] = "Only valid when Schwerbehinderung is 'Ja'"
+        
+        # staatsangehoerigkeit_land requires staatsangehoerigkeit_deutsch='NICHTDEUTSCH'
+        if self.staatsangehoerigkeit_land:
+            if self.staatsangehoerigkeit_deutsch == 'DEUTSCH':  # ← FIXED: Compare to string 'DEUTSCH'
+                errors['staatsangehoerigkeit_land'] = "Only valid when staatsangehoerigkeit_deutsch is 'nicht deutsch'"
+        
+        if errors:
+            raise ValidationError(errors)
+
         
         # staatsangehoerigkeit_land requires staatsangehoerigkeit_deutsch = False
         if self.staatsangehoerigkeit_land:

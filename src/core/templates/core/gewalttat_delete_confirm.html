@@ -1,0 +1,100 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Gewalttat löschen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Gewalttat löschen</h1>
+
+<div style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">⚠️ Bestätigung erforderlich</h2>
+    <p style="margin-bottom: 0; color: #721c24;">
+        Möchten Sie diese Gewalttat wirklich löschen?
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Gewalttat-Informationen</h3>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 40%;">Fall</th>
+            <td>
+                <a href="{% url 'core:case_detail' fall.fall_id %}">
+                    {{ fall.personenbezogene_daten.alias }}
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <th>Zeitraum</th>
+            <td>
+                {% if gewalttat.zeitraum_keine_angabe %}
+                    <span class="text-muted">Keine Angabe</span>
+                {% elif gewalttat.zeitraum_von %}
+                    {{ gewalttat.zeitraum_von|date:"d.m.Y" }}
+                    {% if gewalttat.zeitraum_bis %}
+                        - {{ gewalttat.zeitraum_bis|date:"d.m.Y" }}
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Gewaltarten</th>
+            <td>
+                {% for art in gewalttat.gewalttat_arten.all %}
+                    <span style="background-color: #e9ecef; padding: 3px 8px; border-radius: 3px; margin-right: 5px; display: inline-block; margin-top: 5px;">
+                        {{ art.name }}
+                    </span>
+                {% empty %}
+                    <span class="text-muted">Keine Angabe</span>
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <th>Tatort</th>
+            <td>{{ gewalttat.get_tatort_display|default:"-" }}</td>
+        </tr>
+        <tr>
+            <th>Anzahl Täter*innen</th>
+            <td>{{ gewalttat.get_anzahl_taeterinnen_display|default:"-" }}</td>
+        </tr>
+        {% if gewalttat.anzeige %}
+            <tr>
+                <th>Anzeige</th>
+                <td>{{ gewalttat.get_anzeige_display }}</td>
+            </tr>
+        {% endif %}
+        {% if gewalttat.mitbetroffene_kinder > 0 %}
+            <tr>
+                <th>Mitbetroffene Kinder</th>
+                <td>
+                    {{ gewalttat.mitbetroffene_kinder }} 
+                    (davon {{ gewalttat.davon_direkt_betroffen }} direkt betroffen)
+                </td>
+            </tr>
+        {% endif %}
+        {% if gewalttat.gewalt_notizen %}
+            <tr>
+                <th>Notizen</th>
+                <td style="white-space: pre-wrap;">{{ gewalttat.gewalt_notizen|truncatewords:30 }}</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>ℹ️ Hinweis:</strong> Nach dem Löschen werden auch alle Verknüpfungen zu 
+        Gewaltarten entfernt. Diese Aktion kann nicht rückgängig gemacht werden.
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Gewalttat löschen</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

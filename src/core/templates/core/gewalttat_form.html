@@ -1,0 +1,321 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ action }} Gewalttat - B-EV{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>{{ action }} Gewalttat</h1>
+    <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Zurück zum Fall</a>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>Fall:</strong> {{ fall.personenbezogene_daten.alias }} 
+        ({{ fall.get_zustaendige_beratungsstelle_display }})
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <h2>Alter zum Zeitpunkt der Tat</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.alter_zum_zeitpunkt_der_tat.id_for_label }}">Alter</label>
+        {{ form.alter_zum_zeitpunkt_der_tat }}
+        {% if form.alter_zum_zeitpunkt_der_tat.errors %}
+            <ul class="errorlist">
+                {% for error in form.alter_zum_zeitpunkt_der_tat.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label>
+            {{ form.alter_tat_keine_angabe }}
+            Alter: Keine Angabe
+        </label>
+        {% if form.alter_tat_keine_angabe.errors %}
+            <ul class="errorlist">
+                {% for error in form.alter_tat_keine_angabe.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Zeitraum der Gewalttat</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.zeitraum_von.id_for_label }}">Zeitraum von</label>
+        {{ form.zeitraum_von }}
+        {% if form.zeitraum_von.errors %}
+            <ul class="errorlist">
+                {% for error in form.zeitraum_von.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Format: TT.MM.JJJJ oder JJJJ-MM-TT</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.zeitraum_bis.id_for_label }}">Zeitraum bis</label>
+        {{ form.zeitraum_bis }}
+        {% if form.zeitraum_bis.errors %}
+            <ul class="errorlist">
+                {% for error in form.zeitraum_bis.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Format: TT.MM.JJJJ oder JJJJ-MM-TT</small>
+    </div>
+    
+    <div class="form-group">
+        <label>
+            {{ form.zeitraum_keine_angabe }}
+            Zeitraum: Keine Angabe
+        </label>
+        {% if form.zeitraum_keine_angabe.errors %}
+            <ul class="errorlist">
+                {% for error in form.zeitraum_keine_angabe.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Anzahl und Art der Vorfälle</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.zahl_der_vorfaelle.id_for_label }}">Anzahl der Vorfälle</label>
+        {{ form.zahl_der_vorfaelle }}
+        {% if form.zahl_der_vorfaelle.errors %}
+            <ul class="errorlist">
+                {% for error in form.zahl_der_vorfaelle.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">einmalig, mehrere oder genaue Zahl</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.zahl_der_vorfaelle_genau.id_for_label }}">
+            Genaue Anzahl (wenn "genaue Zahl" ausgewählt)
+        </label>
+        {{ form.zahl_der_vorfaelle_genau }}
+        {% if form.zahl_der_vorfaelle_genau.errors %}
+            <ul class="errorlist">
+                {% for error in form.zahl_der_vorfaelle_genau.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.gewalttat_arten.id_for_label }}">Gewaltarten *</label>
+        {{ form.gewalttat_arten }}
+        {% if form.gewalttat_arten.errors %}
+            <ul class="errorlist">
+                {% for error in form.gewalttat_arten.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Mehrfachauswahl möglich (Strg/Cmd + Klick)</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.art_der_gewalt_andere_details.id_for_label }}">
+            Details zu "Andere" Gewaltart
+        </label>
+        {{ form.art_der_gewalt_andere_details }}
+        {% if form.art_der_gewalt_andere_details.errors %}
+            <ul class="errorlist">
+                {% for error in form.art_der_gewalt_andere_details.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Täter*innen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.anzahl_taeterinnen.id_for_label }}">Anzahl Täter*innen</label>
+        {{ form.anzahl_taeterinnen }}
+        {% if form.anzahl_taeterinnen.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzahl_taeterinnen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">1, mehrere oder genaue Zahl</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.anzahl_taeterinnen_genau.id_for_label }}">
+            Genaue Anzahl (wenn "genaue Zahl" ausgewählt)
+        </label>
+        {{ form.anzahl_taeterinnen_genau }}
+        {% if form.anzahl_taeterinnen_genau.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzahl_taeterinnen_genau.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.taeterinnen_details.id_for_label }}">Täter*innen Details (JSON)</label>
+        {{ form.taeterinnen_details }}
+        {% if form.taeterinnen_details.errors %}
+            <ul class="errorlist">
+                {% for error in form.taeterinnen_details.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">
+            JSON-Format: [{"geschlecht": "männlich", "verhaeltnis": "Bekannter"}]<br>
+            MVP-Hinweis: Manuelle JSON-Eingabe erforderlich
+        </small>
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Tatort und weitere Informationen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.tatort.id_for_label }}">Tatort</label>
+        {{ form.tatort }}
+        {% if form.tatort.errors %}
+            <ul class="errorlist">
+                {% for error in form.tatort.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.anzeige.id_for_label }}">Anzeige</label>
+        {{ form.anzeige }}
+        {% if form.anzeige.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzeige.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Wurde Anzeige erstattet?</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.medizinische_versorgung.id_for_label }}">Medizinische Versorgung</label>
+        {{ form.medizinische_versorgung }}
+        {% if form.medizinische_versorgung.errors %}
+            <ul class="errorlist">
+                {% for error in form.medizinische_versorgung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.vertrauliche_spurensicherung.id_for_label }}">
+            Vertrauliche Spurensicherung
+        </label>
+        {{ form.vertrauliche_spurensicherung }}
+        {% if form.vertrauliche_spurensicherung.errors %}
+            <ul class="errorlist">
+                {% for error in form.vertrauliche_spurensicherung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Mitbetroffene Kinder</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.mitbetroffene_kinder.id_for_label }}">Anzahl mitbetroffener Kinder</label>
+        {{ form.mitbetroffene_kinder }}
+        {% if form.mitbetroffene_kinder.errors %}
+            <ul class="errorlist">
+                {% for error in form.mitbetroffene_kinder.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.davon_direkt_betroffen.id_for_label }}">Davon direkt betroffen</label>
+        {{ form.davon_direkt_betroffen }}
+        {% if form.davon_direkt_betroffen.errors %}
+            <ul class="errorlist">
+                {% for error in form.davon_direkt_betroffen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Kann nicht größer sein als die Gesamtanzahl</small>
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Notizen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.gewalt_notizen.id_for_label }}">Gewalt-Notizen</label>
+        {{ form.gewalt_notizen }}
+        {% if form.gewalt_notizen.errors %}
+            <ul class="errorlist">
+                {% for error in form.gewalt_notizen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">
+            Weitere Informationen zur Gewalttat (z.B. Kontext, Umstände)
+        </small>
+    </div>
+    
+    {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8; margin-bottom: 20px;">
+        <p style="margin: 0;">
+            <strong>ℹ️ Hinweis:</strong> Alle Felder sind optional, außer die Auswahl mindestens 
+            einer Gewaltart. Speichern Sie nur die Informationen, die vorliegen.
+        </p>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

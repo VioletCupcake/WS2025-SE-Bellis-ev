@@ -1,0 +1,127 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ action }} Beratung - B-EV{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>{{ action }} Beratung</h1>
+    <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Zurück zum Fall</a>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>Fall:</strong> {{ fall.personenbezogene_daten.alias }} 
+        ({{ fall.get_zustaendige_beratungsstelle_display }})
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="{{ form.datum.id_for_label }}">Datum der Beratung *</label>
+        {{ form.datum }}
+        {% if form.datum.errors %}
+            <ul class="errorlist">
+                {% for error in form.datum.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Format: TT.MM.JJJJ oder JJJJ-MM-TT</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.durchfuehrungsart.id_for_label }}">Durchführungsart *</label>
+        {{ form.durchfuehrungsart }}
+        {% if form.durchfuehrungsart.errors %}
+            <ul class="errorlist">
+                {% for error in form.durchfuehrungsart.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">
+            Persönlich, Video, Telefon, aufsuchend oder schriftlich
+        </small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.durchfuehrungsort.id_for_label }}">Durchführungsort *</label>
+        {{ form.durchfuehrungsort }}
+        {% if form.durchfuehrungsort.errors %}
+            <ul class="errorlist">
+                {% for error in form.durchfuehrungsort.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">
+            Leipzig Stadt, Leipzig Land oder Nordsachsen
+        </small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.weitere_notizen.id_for_label }}">Weitere Notizen</label>
+        {{ form.weitere_notizen }}
+        {% if form.weitere_notizen.errors %}
+            <ul class="errorlist">
+                {% for error in form.weitere_notizen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">
+            Optionale Notizen zur Beratung (z.B. besprochene Themen, nächste Schritte)
+        </small>
+    </div>
+    
+    {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8; margin-bottom: 20px;">
+        <p style="margin: 0;">
+            <strong>ℹ️ Hinweis:</strong> Nach dem Speichern wird die Anzahl der Beratungen 
+            für diesen Fall automatisch aktualisiert.
+        </p>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+
+{% if beratung %}
+    <hr style="margin: 30px 0;">
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px;">
+        <h3 style="margin-top: 0;">Aktuelle Beratungsdaten</h3>
+        <table style="margin-top: 0;">
+            <tr>
+                <th style="width: 40%;">Datum</th>
+                <td>{{ beratung.datum|date:"d.m.Y" }}</td>
+            </tr>
+            <tr>
+                <th>Durchführungsart</th>
+                <td>{{ beratung.get_durchfuehrungsart_display }}</td>
+            </tr>
+            <tr>
+                <th>Durchführungsort</th>
+                <td>{{ beratung.get_durchfuehrungsort_display }}</td>
+            </tr>
+            {% if beratung.weitere_notizen %}
+                <tr>
+                    <th>Notizen</th>
+                    <td style="white-space: pre-wrap;">{{ beratung.weitere_notizen }}</td>
+                </tr>
+            {% endif %}
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Fall: {{ fall.personenbezogene_daten.alias }} - B-EV{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Fall: {{ fall.personenbezogene_daten.alias }}</h1>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'core:case_list' %}" class="btn btn-secondary">Zurück zur Liste</a>
+        {% if user.role.permissions.can_edit_cases %}
+            <a href="{% url 'core:case_edit' fall.fall_id %}" class="btn">Bearbeiten</a>
+        {% endif %}
+        {% if user.role.permissions.can_edit_cases and not fall.ist_abgeschlossen %}
+            <a href="{% url 'core:case_close' fall.fall_id %}" class="btn">Abschließen</a>
+        {% endif %}
+        {% if user.role.permissions.can_delete_cases %}
+            <a href="{% url 'core:case_delete' fall.fall_id %}" class="btn btn-danger">Löschen</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Fall Information -->
+<div class="mb-3" style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">Fallinformationen</h2>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 30%;">Status</th>
+            <td>
+                {{ fall.get_status_display }}
+                {% if fall.ist_abgeschlossen %}
+                    <span style="color: #28a745; font-weight: bold;">(Abgeschlossen am {{ fall.abschlussdatum|date:"d.m.Y H:i" }})</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Zuständige Beratungsstelle</th>
+            <td>{{ fall.get_zustaendige_beratungsstelle_display }}</td>
+        </tr>
+        <tr>
+            <th>Erstellt am</th>
+            <td>{{ fall.erstellungsdatum|date:"d.m.Y" }}</td>
+        </tr>
+        <tr>
+            <th>Letzte Bearbeitung</th>
+            <td>
+                {{ fall.letzte_bearbeitung|date:"d.m.Y H:i" }}
+                {% if fall.bearbeitet_von %}
+                    von {{ fall.bearbeitet_von.username }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Informationsquelle</th>
+            <td>
+                {% if fall.informationsquelle %}
+                    {{ fall.get_informationsquelle_display }}
+                    {% if fall.informationsquelle_andere_details %}
+                        <br><small class="text-muted">{{ fall.informationsquelle_andere_details }}</small>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Dolmetschungen (Stunden)</th>
+            <td>{{ fall.anzahl_dolmetschungen_stunden }}</td>
+        </tr>
+        {% if fall.dolmetschung_sprachen %}
+            <tr>
+                <th>Sprachen</th>
+                <td>{{ fall.dolmetschung_sprachen }}</td>
+            </tr>
+        {% endif %}
+        {% if fall.weitere_notizen %}
+            <tr>
+                <th>Weitere Notizen</th>
+                <td style="white-space: pre-wrap;">{{ fall.weitere_notizen }}</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+
+<!-- Personenbezogene Daten -->
+<div class="mb-3" style="background-color: #fff3cd; padding: 20px; border-radius: 4px; margin-bottom: 30px;">
+    <h2 style="margin-top: 0;">Personenbezogene Daten</h2>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 30%;">Rolle der ratsuchenden Person</th>
+            <td>{{ personenbezogene_daten.get_rolle_der_ratsuchenden_person_display }}</td>
+        </tr>
+        <tr>
+            <th>Alter</th>
+            <td>
+                {% if personenbezogene_daten.alter_keine_angabe %}
+                    <span class="text-muted">Keine Angabe</span>
+                {% elif personenbezogene_daten.alter %}
+                    {{ personenbezogene_daten.alter }} Jahre
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Geschlechtsidentität</th>
+            <td>{{ personenbezogene_daten.get_geschlechtsidentitaet_display|default:"-" }}</td>
+        </tr>
+        <tr>
+            <th>Sexualität</th>
+            <td>{{ personenbezogene_daten.get_sexualitaet_display|default:"-" }}</td>
+        </tr>
+        <tr>
+            <th>Wohnort</th>
+            <td>
+                {{ personenbezogene_daten.get_wohnort_display|default:"-" }}
+                {% if personenbezogene_daten.wohnort_details %}
+                    <br><small class="text-muted">{{ personenbezogene_daten.wohnort_details }}</small>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Staatsangehörigkeit</th>
+            <td>
+                {% if personenbezogene_daten.staatsangehoerigkeit_deutsch %}
+                    Deutsch
+                {% elif personenbezogene_daten.staatsangehoerigkeit_land %}
+                    {{ personenbezogene_daten.staatsangehoerigkeit_land }}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Berufliche Situation</th>
+            <td>{{ personenbezogene_daten.get_berufliche_situation_display|default:"-" }}</td>
+        </tr>
+        <tr>
+            <th>Schwerbehinderung</th>
+            <td>
+                {{ personenbezogene_daten.get_schwerbehinderung_display|default:"-" }}
+                {% if personenbezogene_daten.schwerbehinderung == 'JA' %}
+                    <br><small class="text-muted">
+                        {% if personenbezogene_daten.form_der_behinderung %}
+                            Form: {{ personenbezogene_daten.get_form_der_behinderung_display }}
+                        {% endif %}
+                        {% if personenbezogene_daten.grad_der_behinderung %}
+                            | Grad: {{ personenbezogene_daten.grad_der_behinderung }}%
+                        {% endif %}
+                    </small>
+                {% endif %}
+            </td>
+        </tr>
+        {% if personenbezogene_daten.personenbezogene_notizen %}
+            <tr>
+                <th>Notizen</th>
+                <td style="white-space: pre-wrap;">{{ personenbezogene_daten.personenbezogene_notizen }}</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+
+<!-- Beratungen -->
+<div class="mb-3" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0;">Beratungen ({{ fall.beratungsanzahl }})</h2>
+        {% if user.role.permissions.can_edit_cases %}
+            <a href="{% url 'core:beratung_add' fall.fall_id %}" class="btn btn-success">Beratung hinzufügen</a>
+        {% endif %}
+    </div>
+    
+    {% if beratungen %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Durchführungsart</th>
+                    <th>Durchführungsort</th>
+                    <th>Notizen</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for beratung in beratungen %}
+                    <tr>
+                        <td>{{ beratung.datum|date:"d.m.Y" }}</td>
+                        <td>{{ beratung.get_durchfuehrungsart_display }}</td>
+                        <td>{{ beratung.get_durchfuehrungsort_display }}</td>
+                        <td>
+                            {% if beratung.weitere_notizen %}
+                                {{ beratung.weitere_notizen|truncatewords:10 }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.role.permissions.can_edit_cases %}
+                                <a href="{% url 'core:beratung_edit' beratung.beratung_id %}" style="margin-right: 10px;">Bearbeiten</a>
+                            {% endif %}
+                            {% if user.role.permissions.can_delete_cases %}
+                                <a href="{% url 'core:beratung_delete' beratung.beratung_id %}" style="color: #dc3545;">Löschen</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">Noch keine Beratungen erfasst.</p>
+    {% endif %}
+</div>
+
+<!-- Gewalttaten -->
+<div class="mb-3">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0;">Gewalttaten ({{ gewalttaten|length }})</h2>
+        {% if user.role.permissions.can_edit_cases %}
+            <a href="{% url 'core:gewalttat_add' fall.fall_id %}" class="btn btn-success">Gewalttat hinzufügen</a>
+        {% endif %}
+    </div>
+    
+    {% if gewalttaten %}
+        {% for gewalttat in gewalttaten %}
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #dc3545;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <h3 style="margin-top: 0; font-size: 1.1rem;">
+                            Gewalttat 
+                            {% if gewalttat.zeitraum_von %}
+                                ({{ gewalttat.zeitraum_von|date:"d.m.Y" }}
+                                {% if gewalttat.zeitraum_bis %} - {{ gewalttat.zeitraum_bis|date:"d.m.Y" }}{% endif %})
+                            {% endif %}
+                        </h3>
+                        
+                        <p style="margin: 5px 0;">
+                            <strong>Gewaltarten:</strong>
+                            {% for art in gewalttat.gewalttat_arten.all %}
+                                <span style="background-color: #e9ecef; padding: 3px 8px; border-radius: 3px; margin-right: 5px; display: inline-block; margin-top: 5px;">{{ art.name }}</span>
+                            {% empty %}
+                                <span class="text-muted">Keine Angabe</span>
+                            {% endfor %}
+                        </p>
+                        
+                        <p style="margin: 5px 0;">
+                            <strong>Tatort:</strong> {{ gewalttat.get_tatort_display|default:"-" }}
+                        </p>
+                        
+                        <p style="margin: 5px 0;">
+                            <strong>Anzahl Täter*innen:</strong> {{ gewalttat.get_anzahl_taeterinnen_display|default:"-" }}
+                        </p>
+                        
+                        {% if gewalttat.anzeige %}
+                            <p style="margin: 5px 0;">
+                                <strong>Anzeige:</strong> {{ gewalttat.get_anzeige_display }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        {% if user.role.permissions.can_edit_cases %}
+                            <a href="{% url 'core:gewalttat_edit' gewalttat.gewalttat_id %}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.9rem;">Bearbeiten</a>
+                        {% endif %}
+                        {% if user.role.permissions.can_delete_cases %}
+                            <a href="{% url 'core:gewalttat_delete' gewalttat.gewalttat_id %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.9rem;">Löschen</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Noch keine Gewalttaten erfasst.</p>
+    {% endif %}
+</div>
+{% endblock %}

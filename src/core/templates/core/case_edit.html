@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Fall bearbeiten - B-EV{% endblock %}
+
+{% block content %}
+<h1>Fall bearbeiten: {{ fall.personenbezogene_daten.alias }}</h1>
+
+<p class="text-muted mb-3">
+    Hinweis: In der MVP-Version können nur ausgewählte Felder bearbeitet werden. 
+    Personenbezogene Daten sind nicht editierbar.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="id_informationsquelle">Informationsquelle</label>
+        <select name="informationsquelle" id="id_informationsquelle" class="form-control">
+            <option value="">---------</option>
+            <option value="POLIZEI" {% if fall.informationsquelle == 'POLIZEI' %}selected{% endif %}>
+                Selbstmeldungen über Polizei
+            </option>
+            <option value="KONTAKTE" {% if fall.informationsquelle == 'KONTAKTE' %}selected{% endif %}>
+                Private Kontakte
+            </option>
+            <option value="BERATUNGSSTELLEN" {% if fall.informationsquelle == 'BERATUNGSSTELLEN' %}selected{% endif %}>
+                Beratungsstellen
+            </option>
+            <option value="INTERNET" {% if fall.informationsquelle == 'INTERNET' %}selected{% endif %}>
+                Internet
+            </option>
+            <option value="AEMTER" {% if fall.informationsquelle == 'AEMTER' %}selected{% endif %}>
+                Ämter
+            </option>
+            <option value="GESUNDHEITSWESEN" {% if fall.informationsquelle == 'GESUNDHEITSWESEN' %}selected{% endif %}>
+                Gesundheitswesen (Arzt/Ärztin)
+            </option>
+            <option value="RECHTSANWAELTE" {% if fall.informationsquelle == 'RECHTSANWAELTE' %}selected{% endif %}>
+                Rechtsanwälte/Rechtsanwältinnen
+            </option>
+            <option value="ANDERE" {% if fall.informationsquelle == 'ANDERE' %}selected{% endif %}>
+                andere Quelle
+            </option>
+            <option value="KEINE_ANGABE" {% if fall.informationsquelle == 'KEINE_ANGABE' %}selected{% endif %}>
+                keine Angabe
+            </option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="id_weitere_notizen">Weitere Notizen</label>
+        <textarea name="weitere_notizen" id="id_weitere_notizen" rows="5">{{ fall.weitere_notizen }}</textarea>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">Speichern</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}
