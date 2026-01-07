@@ -185,6 +185,7 @@ class FallCreateForm(forms.Form):
                     'form_der_behinderung',
                     'Nur gültig bei Schwerbehinderung "Ja"'
                 )
+            
         
         # Validate: staatsangehoerigkeit_land requires nicht_deutsch
         if cleaned_data.get('staatsangehoerigkeit_land'):

@@ -15,7 +15,7 @@ IF you work with AI and you copy past shit into it, especially code
 --> Anonimyze what you feed the model
 In my work, i never use Bellis EV. Because i dont want that connection to exist.
 I shortened it to B_EV
-When working with keys and what not, you can simply put in X's
+When working with keys and other senstive data and what not, you can simply put in X's
 
 That way the model knows something is there. But it doesnt have the link. Or the key. Or anything of interest beyond the code, really.
 committing private secrets like .env files to GitHub is bad. If you feed it to AI, i will find you in your sleep.
