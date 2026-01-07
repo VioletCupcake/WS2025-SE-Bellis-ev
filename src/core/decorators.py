@@ -38,7 +38,7 @@ def permission_required_custom(permission_flag):
                 )
             
             # Check role has permissions configured
-            if not hasattr(request.user.role, 'permissions'):
+            if not hasattr(request.user.role, 'permissions') or request.user.role.permissions is None:
                 raise PermissionDenied(
                     "Rolle hat keine Berechtigungen konfiguriert. Kontaktieren Sie einen Administrator."
                 )

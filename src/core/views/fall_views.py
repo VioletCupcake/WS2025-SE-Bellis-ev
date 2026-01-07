@@ -195,20 +195,25 @@ def case_delete(request, fall_id):
     if request.method == 'POST':
         delete_type = request.POST.get('delete_type', 'soft')
         
-        if delete_type == 'hard' and can_hard_delete:
-            # Hard delete via FallManager (checks permissions again)
-            alias = str(fall.personenbezogene_daten.alias) # type: ignore
+        if delete_type == 'hard':
+            if not can_hard_delete:
+                raise PermissionDenied("Keine Berechtigung für permanentes Löschen.")
+            # Proceed with hard delete
+            alias = str(fall.personenbezogene_daten.alias)
             FallManager.hardDeleteFall(fall.fall_id, user)
             messages.success(request, f'Fall "{alias}" permanent gelöscht.')
             return redirect('core:case_list')
             
-        elif delete_type == 'soft' and can_soft_delete:
-            # Soft delete (archive)
+        elif delete_type == 'soft':
+            if not can_soft_delete:
+                raise PermissionDenied("Keine Berechtigung zum Archivieren.")
+            # Proceed with soft delete
             fall.archive()
             messages.success(request, f'Fall "{fall}" archiviert.')
             return redirect('core:case_list')
         else:
-            messages.error(request, 'Ungültige Löschoption oder fehlende Berechtigung.')
+            messages.error(request, 'Ungültige Löschoption.')
+
     
     context = {
         'fall': fall,

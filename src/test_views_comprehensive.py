@@ -13,7 +13,7 @@ Run: python manage.py shell < test_views_comprehensive.py
 
 from django.test import Client
 from core.models import (
-    User, Fall, PersonenbezogeneDaten, Beratung, Gewalttat, 
+    User, Fall, PersonenbezogeneDaten, Beratung, Gewalttat,
     GewalttatArt, Role
 )
 from core.services.fall_manager import FallManager
@@ -22,6 +22,9 @@ import json
 print("\n" + "="*70)
 print("PHASE 3B COMPREHENSIVE VIEW TESTING")
 print("="*70 + "\n")
+
+# ===== TEST RESULT TRACKING =====
+test_results = {'passed': 0, 'failed': 0}
 
 # ===== SETUP =====
 client = Client()
@@ -40,8 +43,8 @@ try:
         print(f"    - can_edit_cases: {user.role.permissions.can_edit_cases}")
         print(f"    - can_delete_cases: {user.role.permissions.can_delete_cases}")
         print(f"    - can_hard_delete_cases: {user.role.permissions.can_hard_delete_cases}")
-    print()
-    
+        print()
+        
 except User.DoesNotExist:
     print("✗ ERROR: Run 'python manage.py loaddata seed_data.json' first\n")
     exit(1)
@@ -51,7 +54,6 @@ gewalttat_arten = list(GewalttatArt.objects.all()[:3])
 if not gewalttat_arten:
     print("✗ ERROR: No GewalttatArt entries found. Load seed data.\n")
     exit(1)
-
 print(f"✓ Found {len(gewalttat_arten)} GewalttatArt entries for testing\n")
 
 # Create test case if none exist
@@ -84,10 +86,17 @@ def print_test_header(test_num, description):
 def evaluate_response(response, expected_status, test_name):
     """Evaluate response and print result"""
     success = response.status_code == expected_status
+    
+    # Track results
+    if success:
+        test_results['passed'] += 1
+    else:
+        test_results['failed'] += 1
+    
     print(f"  Status: {response.status_code} (expected: {expected_status})")
     print(f"  Result: {'✓ PASS' if success else '✗ FAIL'}")
     
-    if not success and hasattr(response, 'context') and response.context:
+    if not success and response.context is not None:
         if 'form' in response.context:
             form_errors = response.context['form'].errors
             if form_errors:
@@ -98,7 +107,6 @@ def evaluate_response(response, expected_status, test_name):
 
 # ===== TEST 1: AUTHENTICATION REDIRECT =====
 print_test_header(1, "Authentication Required (Unauthenticated Access)")
-
 response = client.get('/cases/')
 print(f"GET /cases/ (not logged in)")
 evaluate_response(response, 302, "auth_redirect")
@@ -107,7 +115,6 @@ print()
 
 # ===== TEST 2: BASIS USER - CASE LIST =====
 print_test_header(2, "Case List View (BASIS User)")
-
 client.login(username='user_basis', password='test123')
 print(f"Logged in as: user_basis")
 
@@ -115,7 +122,7 @@ response = client.get('/cases/')
 print(f"\nGET /cases/")
 evaluate_response(response, 200, "case_list")
 
-if response.status_code == 200 and hasattr(response, 'context'):
+if response.status_code == 200 and response.context is not None:
     cases_count = response.context.get('cases', [])
     if hasattr(cases_count, 'count'):
         print(f"  Cases in context: {cases_count.count()}")
@@ -126,17 +133,19 @@ print()
 
 # ===== TEST 3: CASE DETAIL VIEW =====
 print_test_header(3, "Case Detail View (All Users)")
-
 client.login(username='user_basis', password='test123')
+
 response = client.get(f'/cases/{test_fall.fall_id}/')
 print(f"GET /cases/{test_fall.fall_id}/")
 evaluate_response(response, 200, "case_detail")
 
-if response.status_code == 200 and hasattr(response, 'context'):
+if response.status_code == 200 and response.context is not None:
     fall = response.context.get('fall')
     if fall:
         print(f"  Fall alias: {fall.personenbezogene_daten.alias}")
-        print(f"  Beratungen: {response.context.get('beratungen', []).count() if hasattr(response.context.get('beratungen', []), 'count') else 0}")
+        beratungen = response.context.get('beratungen', [])
+        beratungen_count = beratungen.count() if hasattr(beratungen, 'count') else 0
+        print(f"  Beratungen: {beratungen_count}")
 
 client.logout()
 print()
@@ -144,10 +153,9 @@ print()
 
 # ===== TEST 4: CASE CREATION (COMPLETE FORM) =====
 print_test_header(4, "Case Creation with Complete Form Data (BASIS User)")
-
 client.login(username='user_basis', password='test123')
 
-# Complete form data with all required and optional fields
+# Complete form data with corrected enum values
 complete_case_data = {
     # Fall fields
     'zustaendige_beratungsstelle': 'FBS_2_LKNSA',
@@ -161,12 +169,11 @@ complete_case_data = {
     'alias': 'TEST_COMPLETE_002',
     'rolle_der_ratsuchenden_person': 'BETROFFENE',
     'alter': '28',
-    'alter_keine_angabe': False,
-    'geschlechtsidentitaet': 'CIS_WEIBLICH',
+    'geschlechtsidentitaet': 'CIS_W',  # CORRECTED: enum key, not display value
     'sexualitaet': 'HETEROSEXUELL',
     'wohnort': 'LEIPZIG_STADT',
     'wohnort_details': '',
-    'staatsangehoerigkeit_deutsch': True,
+    'staatsangehoerigkeit_deutsch': 'DEUTSCH',  # CORRECTED: enum key, not boolean
     'staatsangehoerigkeit_land': '',
     'berufliche_situation': 'BERUFSTAETIG',
     'schwerbehinderung': 'NEIN',
@@ -183,6 +190,7 @@ if response.status_code == 302:
     print(f"  Expected: 302 (redirect on success)")
     print(f"  Redirect URL: {response.url}")
     print(f"  Result: ✓ PASS")
+    test_results['passed'] += 1
     
     # Verify case was created
     created_case = PersonenbezogeneDaten.objects.filter(alias='TEST_COMPLETE_002').first()
@@ -196,7 +204,8 @@ if response.status_code == 302:
 else:
     print(f"  Expected: 302")
     print(f"  Result: ✗ FAIL")
-    if hasattr(response, 'context') and response.context and 'form' in response.context:
+    test_results['failed'] += 1
+    if response.context is not None and 'form' in response.context:
         print(f"  Form errors: {response.context['form'].errors}")
     test_fall_created = test_fall
 
@@ -206,7 +215,6 @@ print()
 
 # ===== TEST 5: ADD BERATUNG =====
 print_test_header(5, "Add Counseling Session (BASIS User)")
-
 client.login(username='user_basis', password='test123')
 
 beratung_data = {
@@ -232,26 +240,23 @@ print()
 
 # ===== TEST 6: ADD GEWALTTAT =====
 print_test_header(6, "Add Violence Incident (BASIS User)")
-
 client.login(username='user_basis', password='test123')
 
 gewalttat_data = {
     'alter_zum_zeitpunkt_der_tat': '25',
-    'alter_tat_keine_angabe': False,
     'zeitraum_von': '2025-06-15',
     'zeitraum_bis': '',
-    'zeitraum_keine_angabe': False,
     'zahl_der_vorfaelle': 'EINMALIG',
     'zahl_der_vorfaelle_genau': '',
-    'gewalttat_arten': [str(art.art_id) for art in gewalttat_arten],  # Multiple selection
+    'gewalttat_arten': [str(art.art_id) for art in gewalttat_arten],
     'art_der_gewalt_andere_details': '',
-    'anzahl_taeterinnen': 'EINS',
+    'anzahl_taeterinnen': '1',  # CORRECTED: enum key '1', not 'EINS'
     'anzahl_taeterinnen_genau': '',
     'taeterinnen_details': json.dumps([{
         'geschlecht': 'männlich',
-        'verhaeltnis': 'Bekannter'
+        'verhaeltnis_zur_ratsuchenden_person': 'Bekannte:r'  # CORRECTED: full field name + correct value
     }]),
-    'tatort': 'LEIPZIG_STADT',
+    'tatort': 'LEIPZIG',  # CORRECTED: 'LEIPZIG', not 'LEIPZIG_STADT'
     'anzeige': 'NEIN',
     'medizinische_versorgung': 'JA',
     'vertrauliche_spurensicherung': 'NEIN',
@@ -276,7 +281,6 @@ print()
 
 # ===== TEST 7: PERMISSION - BASIS CANNOT DELETE =====
 print_test_header(7, "Permission Check - BASIS Cannot Soft Delete")
-
 client.login(username='user_basis', password='test123')
 
 response = client.post(f'/cases/{test_fall.fall_id}/delete/', data={'delete_type': 'soft'})
@@ -296,7 +300,6 @@ print_test_header(8, "Permission Check - ERWEITERT Can Soft Delete")
 
 # Create disposable case for ERWEITERT
 client.login(username='user_erweitert', password='test123')
-
 disposable_fall = FallManager.createFall(
     {'zustaendige_beratungsstelle': 'FBS_1_LE', 'bearbeitet_von': user_erweitert},
     {'alias': 'TEST_SOFT_DELETE_001', 'rolle_der_ratsuchenden_person': 'BETROFFENE'}
@@ -318,7 +321,6 @@ print()
 
 # ===== TEST 9: PERMISSION - ERWEITERT CANNOT HARD DELETE =====
 print_test_header(9, "Permission Check - ERWEITERT Cannot Hard Delete")
-
 client.login(username='user_erweitert', password='test123')
 
 # Create another disposable case
@@ -341,7 +343,6 @@ print()
 
 # ===== TEST 10: PERMISSION - ADMIN CAN HARD DELETE =====
 print_test_header(10, "Permission Check - ADMIN Can Hard Delete")
-
 client.login(username='user_admin', password='test123')
 
 # Create disposable case for hard deletion
@@ -351,18 +352,22 @@ disposable_fall_3 = FallManager.createFall(
 )
 
 fall_id_to_delete = disposable_fall_3.fall_id
+# Capture PersonenbezogeneDaten PK before deletion for CASCADE verification
+personen_id = disposable_fall_3.personenbezogene_daten.personenbezogene_daten_id
 
 response = client.post(f'/cases/{fall_id_to_delete}/delete/', data={'delete_type': 'hard'})
 print(f"POST /cases/{fall_id_to_delete}/delete/ (ADMIN user, hard delete)")
 success = evaluate_response(response, 302, "admin_hard_delete")
 
 if success:
-    # Verify deletion
+    # Verify deletion via direct PK lookup (not FK traversal)
     deleted = not Fall.objects.filter(fall_id=fall_id_to_delete).exists()
     print(f"  Case deleted from DB: {'✓ PASS' if deleted else '✗ FAIL'}")
     
     # Verify CASCADE deletion
-    personen_deleted = not PersonenbezogeneDaten.objects.filter(fall__fall_id=fall_id_to_delete).exists()
+    personen_deleted = not PersonenbezogeneDaten.objects.filter(
+        personenbezogene_daten_id=personen_id
+    ).exists()
     print(f"  CASCADE deletion (PersonenbezogeneDaten): {'✓ PASS' if personen_deleted else '✗ FAIL'}")
 
 client.logout()
@@ -371,7 +376,6 @@ print()
 
 # ===== TEST 11: EDIT OPERATIONS =====
 print_test_header(11, "Case Edit Operation (BASIS User)")
-
 client.login(username='user_basis', password='test123')
 
 edit_data = {
@@ -394,7 +398,6 @@ print()
 
 # ===== TEST 12: CLOSE CASE =====
 print_test_header(12, "Close Case Operation (BASIS User)")
-
 client.login(username='user_basis', password='test123')
 
 # Create case specifically for closing
@@ -423,13 +426,21 @@ print("="*70)
 print("TEST SUITE COMPLETE")
 print("="*70)
 print()
-print("Verification Status:")
-print("  ✓ Custom permission system (PermissionSet)")
-print("  ✓ Full CRUD operations (Fall, Beratung, Gewalttat)")
-print("  ✓ Permission boundaries (BASIS < ERWEITERT < ADMIN)")
-print("  ✓ Form validation with complete data")
-print("  ✓ Database operations and CASCADE behavior")
-print("  ✓ Template rendering (all views return 200/302)")
+print(f"Results: {test_results['passed']} passed, {test_results['failed']} failed")
 print()
-print("Phase 3B implementation verified.")
+
+if test_results['failed'] == 0:
+    print("✓ All tests passed")
+    print("  - Custom permission system (PermissionSet)")
+    print("  - Full CRUD operations (Fall, Beratung, Gewalttat)")
+    print("  - Permission boundaries (BASIS < ERWEITERT < ADMIN)")
+    print("  - Form validation with complete data")
+    print("  - Database operations and CASCADE behavior")
+    print("  - Template rendering (all views return 200/302)")
+    print()
+    print("Phase 3B implementation verified.")
+else:
+    print("⚠️  SOME TESTS FAILED - Review output above")
+    exit(1)  # Non-zero exit for CI/CD
+
 print("="*70)
