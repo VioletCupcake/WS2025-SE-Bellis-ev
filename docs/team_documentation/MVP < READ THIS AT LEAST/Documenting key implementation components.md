@@ -100,4 +100,3 @@ If anzahl_taeterinnen = 'GENAUE_ZAHL' → anzahl_taeterinnen_genau should be fil
 If alter_tat_keine_angabe = True → alter_zum_zeitpunkt_der_tat should be NULL
 If zeitraum_keine_angabe = True → zeitraum_von and zeitraum_bis should be NULL
 ​
-### Its enforced in Django, with form validation, database doesnt really get the concept

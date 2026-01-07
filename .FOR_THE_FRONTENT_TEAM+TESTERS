@@ -71,10 +71,10 @@ Current State: Functional but unstyled
 
 Testing:
     Navigate to http://localhost:8000/cases/
-    Verify table displays existing test cases
-    Click alias → should go to case detail
-    Click "Neuer Fall" → should go to create form
-    Check search functionality (if exists)
+    Verify table displays existing test cases           # it does
+    Click alias → should go to case detail              # it does
+    Click "Neuer Fall" → should go to create form       # it does
+    Check search functionality (if exists)              #works
 
 ====
 Case Detail Template (Priority: HIGH)
