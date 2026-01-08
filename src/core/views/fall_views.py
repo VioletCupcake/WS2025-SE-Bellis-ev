@@ -132,10 +132,18 @@ def case_edit(request, fall_id):
     if request.method == 'POST':
         # For MVP: Simple field updates via direct ORM
         # Post-MVP: Use dedicated edit form
+        fall.zustaendige_beratungsstelle = request.POST.get('zustaendige_beratungsstelle', fall.zustaendige_beratungsstelle)
         fall.informationsquelle = request.POST.get('informationsquelle', fall.informationsquelle)
+        fall.informationsquelle_andere_details = request.POST.get('informationsquelle_andere_details', '')
+        fall.anzahl_dolmetschungen_stunden = float(request.POST.get('anzahl_dolmetschungen_stunden') or 0)
+        fall.dolmetschung_sprachen = request.POST.get('dolmetschung_sprachen', '')
         fall.weitere_notizen = request.POST.get('weitere_notizen', fall.weitere_notizen)
         fall.bearbeitet_von = request.user
-        fall.save(update_fields=['informationsquelle', 'weitere_notizen', 'bearbeitet_von', 'letzte_bearbeitung'])
+        fall.save(update_fields=[
+            'zustaendige_beratungsstelle', 'informationsquelle', 'informationsquelle_andere_details',
+            'anzahl_dolmetschungen_stunden', 'dolmetschung_sprachen', 'weitere_notizen',
+            'bearbeitet_von', 'letzte_bearbeitung'
+        ])
         
         messages.success(request, f'Fall "{fall}" aktualisiert.')
         return redirect('core:case_detail', fall_id=fall.fall_id)
