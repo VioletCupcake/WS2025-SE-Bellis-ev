@@ -92,7 +92,7 @@ def case_create(request):
 @login_required
 def case_detail(request, fall_id):
     """
-    Display case details with related Beratungen and Gewalttaten.
+    Display case details with related Beratungen, Gewalttaten, and Folgen der Gewalt.
     
     Permission: All authenticated users (view access)
     """
@@ -102,7 +102,8 @@ def case_detail(request, fall_id):
             'bearbeitet_von'
         ).prefetch_related(
             'beratungen',
-            'gewalttaten__gewalttat_arten'
+            'gewalttaten__gewalttat_arten',
+            'folgen_relations__folge'
         ),
         fall_id=fall_id
     )
@@ -112,6 +113,7 @@ def case_detail(request, fall_id):
         'personenbezogene_daten': fall.personenbezogene_daten, # type: ignore
         'beratungen': fall.beratungen.all().order_by('-datum'), # type: ignore
         'gewalttaten': fall.gewalttaten.all(), # type: ignore
+        'folgen_relations': fall.folgen_relations.all().select_related('folge').order_by('folge__kategorie', 'folge__name'), # type: ignore
     }
     return render(request, 'core/case_detail.html', context)
 

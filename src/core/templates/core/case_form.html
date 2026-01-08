@@ -36,9 +36,9 @@
         {% endif %}
     </div>
     
-    <div class="form-group">
+    <div class="form-group" id="informationsquelle_andere_wrapper">
         <label for="{{ form.informationsquelle_andere_details.id_for_label }}">
-            Details zur Informationsquelle (wenn "andere Quelle")
+            Details zur Informationsquelle
         </label>
         {{ form.informationsquelle_andere_details }}
         {% if form.informationsquelle_andere_details.errors %}
@@ -203,12 +203,11 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <small class="text-muted">Wählen Sie "deutsch" oder "nicht deutsch"</small>
     </div>
     
-    <div class="form-group">
+    <div class="form-group" id="staatsangehoerigkeit_land_wrapper">
         <label for="{{ form.staatsangehoerigkeit_land.id_for_label }}">
-            Staatsangehörigkeit Land (wenn nicht deutsch)
+            Staatsangehörigkeit Land
         </label>
         {{ form.staatsangehoerigkeit_land }}
         {% if form.staatsangehoerigkeit_land.errors %}
@@ -218,7 +217,6 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <small class="text-muted">Nur ausfüllen wenn Staatsangehörigkeit "nicht deutsch" ist</small>
     </div>
 
     
@@ -246,7 +244,7 @@
         {% endif %}
     </div>
     
-    <div class="form-group">
+    <div class="form-group" id="form_der_behinderung_wrapper">
         <label for="{{ form.form_der_behinderung.id_for_label }}">Form der Behinderung</label>
         {{ form.form_der_behinderung }}
         {% if form.form_der_behinderung.errors %}
@@ -258,7 +256,7 @@
         {% endif %}
     </div>
     
-    <div class="form-group">
+    <div class="form-group" id="grad_der_behinderung_wrapper">
         <label for="{{ form.grad_der_behinderung.id_for_label }}">Grad der Behinderung (%)</label>
         {{ form.grad_der_behinderung }}
         {% if form.grad_der_behinderung.errors %}
@@ -295,4 +293,49 @@
         <a href="{% url 'core:case_list' %}" class="btn btn-secondary">Abbrechen</a>
     </div>
 </form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// conditional field visibility
+document.addEventListener('DOMContentLoaded', function() {
+    // helper to show/hide wrapper divs
+    function toggleField(wrapperId, show) {
+        var el = document.getElementById(wrapperId);
+        if (el) el.style.display = show ? '' : 'none';
+    }
+    
+    // informationsquelle -> andere details
+    var infoQuelle = document.getElementById('id_informationsquelle');
+    function updateInfoQuelle() {
+        toggleField('informationsquelle_andere_wrapper', infoQuelle.value === 'ANDERE');
+    }
+    if (infoQuelle) {
+        infoQuelle.addEventListener('change', updateInfoQuelle);
+        updateInfoQuelle();
+    }
+    
+    // staatsangehoerigkeit -> land
+    var staatsang = document.getElementById('id_staatsangehoerigkeit_deutsch');
+    function updateStaatsang() {
+        toggleField('staatsangehoerigkeit_land_wrapper', staatsang.value === 'NICHT_DEUTSCH');
+    }
+    if (staatsang) {
+        staatsang.addEventListener('change', updateStaatsang);
+        updateStaatsang();
+    }
+    
+    // schwerbehinderung -> form + grad
+    var schwerbeh = document.getElementById('id_schwerbehinderung');
+    function updateSchwerbeh() {
+        var show = schwerbeh.value === 'JA';
+        toggleField('form_der_behinderung_wrapper', show);
+        toggleField('grad_der_behinderung_wrapper', show);
+    }
+    if (schwerbeh) {
+        schwerbeh.addEventListener('change', updateSchwerbeh);
+        updateSchwerbeh();
+    }
+});
+</script>
 {% endblock %}

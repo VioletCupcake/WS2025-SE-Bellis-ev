@@ -98,6 +98,15 @@ class Fall(models.Model):
     
     # General notes
     weitere_notizen = models.TextField(blank=True)
+    
+    # Many-to-many relationship with FolgenDerGewalt via explicit junction table
+    folgen_der_gewalt = models.ManyToManyField(
+        'FolgenDerGewalt',
+        through='Fall_FolgenDerGewalt',
+        related_name='faelle',
+        blank=True,
+        help_text="Consequence types linked via junction table Fall_FolgenDerGewalt"
+    )
 
     
     class Meta:

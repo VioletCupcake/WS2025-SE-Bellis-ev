@@ -252,7 +252,12 @@
                     <li class="user-info">
                         {{ user.username }} ({{ user.role.name }})
                     </li>
-                    <li><a href="{% url 'core:logout' %}">Logout</a></li>
+                    <li>
+                        <form method="post" action="{% url 'core:logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background: none; border: none; color: inherit; cursor: pointer; text-decoration: underline;">Logout</button>
+                        </form>
+                    </li>
                 {% else %}
                     <li><a href="{% url 'core:login' %}">Login</a></li>
                 {% endif %}
