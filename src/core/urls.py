@@ -7,7 +7,7 @@ Uses Django's built-in auth views for login/logout.
 
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from core.views import fall_views, beratung_views, gewalttat_views
+from core.views import fall_views, beratung_views, gewalttat_views, folgen_views
 
 app_name = 'core'
 
@@ -19,7 +19,9 @@ urlpatterns = [
     ), name='login'),
     
     path('logout/', auth_views.LogoutView.as_view(
-        next_page='core:login'
+        http_method_names=['get', 'post'],
+        next_page='core:login',
+        template_name=None
     ), name='logout'),
     
     # ===== CASE MANAGEMENT =====
@@ -40,4 +42,9 @@ urlpatterns = [
     path('cases/<uuid:fall_id>/gewalttat/add/', gewalttat_views.gewalttat_add, name='gewalttat_add'),
     path('gewalttat/<uuid:gewalttat_id>/edit/', gewalttat_views.gewalttat_edit, name='gewalttat_edit'),
     path('gewalttat/<uuid:gewalttat_id>/delete/', gewalttat_views.gewalttat_delete, name='gewalttat_delete'),
+    
+    # ===== FOLGEN DER GEWALT (CONSEQUENCES) =====
+    path('cases/<uuid:fall_id>/folgen/add/', folgen_views.folgen_add, name='folgen_add'),
+    path('folgen/<int:folgen_id>/edit/', folgen_views.folgen_edit, name='folgen_edit'),
+    path('folgen/<int:folgen_id>/delete/', folgen_views.folgen_delete, name='folgen_delete'),
 ]
