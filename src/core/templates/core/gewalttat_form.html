@@ -1,10 +1,10 @@
 {% extends 'core/base.html' %}
 
-{% block title %}{{ action }} Gewalttat - B-EV{% endblock %}
+{% block title %}{{ action }} Gewaltvorfall - B-EV{% endblock %}
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h1>{{ action }} Gewalttat</h1>
+    <h1>{{ action }} Gewaltvorfall</h1>
     <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Zurück zum Fall</a>
 </div>
 
@@ -48,7 +48,7 @@
     
     <hr style="margin: 30px 0;">
     
-    <h2>Zeitraum der Gewalttat</h2>
+    <h2>Zeitraum des Gewaltvorfalls</h2>
     
     <div class="form-group">
         <label for="{{ form.zeitraum_von.id_for_label }}">Zeitraum von</label>
@@ -335,7 +335,7 @@
     <h2>Notizen</h2>
     
     <div class="form-group">
-        <label for="{{ form.gewalt_notizen.id_for_label }}">Gewalt-Notizen</label>
+        <label for="{{ form.gewalt_notizen.id_for_label }}">Weitere Informationen</label>
         {{ form.gewalt_notizen }}
         {% if form.gewalt_notizen.errors %}
             <ul class="errorlist">
@@ -345,7 +345,7 @@
             </ul>
         {% endif %}
         <small class="text-muted">
-            Weitere Informationen zur Gewalttat (z.B. Kontext, Umstände)
+            Weitere Informationen zum Gewaltvorfall (z.B. Kontext, Umstände)
         </small>
     </div>
     

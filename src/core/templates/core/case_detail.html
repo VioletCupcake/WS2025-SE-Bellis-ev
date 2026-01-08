@@ -209,12 +209,12 @@
     {% endif %}
 </div>
 
-<!-- Gewalttaten -->
+<!-- Gewaltvorfälle -->
 <div class="mb-3">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="margin: 0;">Gewalttaten ({{ gewalttaten|length }})</h2>
+        <h2 style="margin: 0;">Gewaltvorfälle ({{ gewalttaten|length }})</h2>
         {% if user.role.permissions.can_edit_cases %}
-            <a href="{% url 'core:gewalttat_add' fall.fall_id %}" class="btn btn-success">Gewalttat hinzufügen</a>
+            <a href="{% url 'core:gewalttat_add' fall.fall_id %}" class="btn btn-success">Gewaltvorfall hinzufügen</a>
         {% endif %}
     </div>
     
@@ -224,7 +224,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div style="flex: 1;">
                         <h3 style="margin-top: 0; font-size: 1.1rem;">
-                            Gewalttat 
+                            Gewaltvorfall 
                             {% if gewalttat.zeitraum_von %}
                                 ({{ gewalttat.zeitraum_von|date:"d.m.Y" }}
                                 {% if gewalttat.zeitraum_bis %} - {{ gewalttat.zeitraum_bis|date:"d.m.Y" }}{% endif %})

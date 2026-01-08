@@ -25,7 +25,7 @@
     </div>
     
     <div class="form-group">
-        <label for="{{ form.informationsquelle.id_for_label }}">Informationsquelle</label>
+        <label for="{{ form.informationsquelle.id_for_label }}">Woher hat die ratsuchende Person von der Beratungsstelle erfahren?</label>
         {{ form.informationsquelle }}
         {% if form.informationsquelle.errors %}
             <ul class="errorlist">
@@ -51,8 +51,15 @@
     </div>
     
     <div class="form-group">
+        <label>
+            {{ form.dolmetschung_in_anspruch_genommen }}
+            Wurde Dolmetschung in Anspruch genommen?
+        </label>
+    </div>
+    
+    <div class="form-group" id="dolmetschung_stunden_wrapper">
         <label for="{{ form.anzahl_dolmetschungen_stunden.id_for_label }}">
-            Anzahl Dolmetschungen (Stunden)
+            Anzahl der Dolmetschungs-Stunden
         </label>
         {{ form.anzahl_dolmetschungen_stunden }}
         {% if form.anzahl_dolmetschungen_stunden.errors %}
@@ -64,8 +71,8 @@
         {% endif %}
     </div>
     
-    <div class="form-group">
-        <label for="{{ form.dolmetschung_sprachen.id_for_label }}">Dolmetschung Sprachen</label>
+    <div class="form-group" id="dolmetschung_sprachen_wrapper">
+        <label for="{{ form.dolmetschung_sprachen.id_for_label }}">Dolmetschungs-Sprachen</label>
         {{ form.dolmetschung_sprachen }}
         {% if form.dolmetschung_sprachen.errors %}
             <ul class="errorlist">
@@ -335,6 +342,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (schwerbeh) {
         schwerbeh.addEventListener('change', updateSchwerbeh);
         updateSchwerbeh();
+    }
+    
+    // dolmetschung checkbox -> stunden + sprachen fields
+    var dolmetschungCheck = document.getElementById('id_dolmetschung_in_anspruch_genommen');
+    function updateDolmetschung() {
+        var show = dolmetschungCheck && dolmetschungCheck.checked;
+        toggleField('dolmetschung_stunden_wrapper', show);
+        toggleField('dolmetschung_sprachen_wrapper', show);
+    }
+    if (dolmetschungCheck) {
+        dolmetschungCheck.addEventListener('change', updateDolmetschung);
+        updateDolmetschung();
     }
 });
 </script>

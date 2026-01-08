@@ -38,16 +38,21 @@ class FallCreateForm(forms.Form):
         required=False
     )
     
+    dolmetschung_in_anspruch_genommen = forms.BooleanField(
+        label="Wurde Dolmetschung in Anspruch genommen?",
+        required=False
+    )
+    
     anzahl_dolmetschungen_stunden = forms.FloatField(
         initial=0.0,
         min_value=0.0,
-        label="Dolmetschungen (Stunden)",
+        label="Anzahl der Dolmetschungs-Stunden",
         required=False
     )
     
     dolmetschung_sprachen = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 2}),
-        label="Dolmetschung - Sprachen",
+        label="Dolmetschungs-Sprachen",
         required=False
     )
     
@@ -86,13 +91,15 @@ class FallCreateForm(forms.Form):
     geschlechtsidentitaet = forms.ChoiceField(
         choices=PersonenbezogeneDaten.GESCHLECHT_CHOICES,
         label="Geschlechtsidentität",
-        required=False
+        required=False,
+        initial='KEINE_ANGABE'
     )
     
     sexualitaet = forms.ChoiceField(
         choices=PersonenbezogeneDaten.SEXUALITAET_CHOICES,
         label="Sexualität",
-        required=False
+        required=False,
+        initial='KEINE_ANGABE'
     )
     
     wohnort = forms.ChoiceField(
