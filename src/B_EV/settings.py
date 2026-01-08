@@ -140,6 +140,20 @@ USE_I18N = True
 
 USE_TZ = True
 
+# German date/time formats
+# Note: HTML5 date inputs (type="date") always use yyyy-mm-dd internally,
+# but Django needs to parse both formats for text inputs and validation
+DATE_FORMAT = 'd.m.Y'  # display format: 31.12.2024
+DATE_INPUT_FORMATS = [
+    '%d.%m.%Y',  # 31.12.2024 (German format)
+    '%Y-%m-%d',  # 2024-12-31 (ISO format from HTML5 date inputs)
+    '%d/%m/%Y',  # 31/12/2024 (alternative)
+]
+DATETIME_INPUT_FORMATS = [
+    '%d.%m.%Y %H:%M',  # 31.12.2024 14:30
+    '%Y-%m-%d %H:%M:%S',  # ISO format
+]
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
