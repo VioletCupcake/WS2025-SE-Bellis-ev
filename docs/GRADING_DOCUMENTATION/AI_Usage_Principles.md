@@ -15,7 +15,7 @@ IF you work with AI and you copy past shit into it, especially code
 --> Anonimyze what you feed the model
 In my work, i never use Bellis EV. Because i dont want that connection to exist.
 I shortened it to B_EV
-When working with keys and other senstive data and what not, you can simply put in X's
+When working with keys and what not, you can simply put in X's
 
 That way the model knows something is there. But it doesnt have the link. Or the key. Or anything of interest beyond the code, really.
 committing private secrets like .env files to GitHub is bad. If you feed it to AI, i will find you in your sleep.
@@ -38,6 +38,15 @@ What is Perplexity?
 Imagine an actualy organised workspace out of LLM Chat instances. That are fully customizable if it comes to models and functions used (Premium models are locked behind paid plans, but my Revolut offers a free subscription). 
 You can define sets of instructions that carry over chat within workspaces, ensuring consistent answering styles.
 
+#### Copilot
+Copilot is the chat bar built into VSCode, usually on the right side of your screen. It allows you to query AI as you code. Since Copilot has access to your workspace, it can use it as reference when analysing or suggesting Adjustments. This means that starting new chats leads to less loss of context. 
+The free version has limited models. I suggest Claude 4.5 Haiku.
+The tool has 4 Settings Of those, Agent can be the most dangerous while also offering the most potential. AI Agents take much more independent actions in your repo, which means it might make changes or implement things you didn't actually ask for.
+It can, however, be very helpful for learning and understanding code, errors and methods.
+If you use it for code, ensure that it asks for confirmation after every step. Ensure you know what it does, how. Even so, it will still drift.
+AND NEVER, EVER, ENABLE AUTO-APPROVE
+
+
 #### What Models to use
 Don't use ChatGPT. I find that DeepSeek/DeepThink performs better in terms of code.
 However, if you can, use Claude. It performs best for IT related questions, finding issues, explaining concepts and so on.
@@ -48,6 +57,8 @@ Different LLMs process Context differently, but whats consistent is that the ini
 Even so, there are limits to the amount of tokens a model can process as initial context before additional information leads to diminished returns overall.
 I try to use 2k, 2.5k max, as a guideline.
 Theres also a maximum of context within a chat, so eventually your model will start to hallucinate.
+Peridically requesting an evaluation of chat length, used tokens, context retention and efficiency can help keeping track.
+
 Another reason why good initial instructions, short concise answers and consistency when transferring chats is important.
 For that reason I use Master-Prompts for all my Projects. They contain Style Guidelines, as well as key System, User and Project context that may be important to give you the answers that actually fit your SetUp. I will provide a part of my Master Prompt in this repo.
 
@@ -57,6 +68,8 @@ As with work by others, you should always double check the shit you get.
 From my experience, good generative AI models can be used to write decent, working code - i do it all the time.
 The issue is that you still need to understand how to create software.
 You need to know what you want, what you dont want, how to prompt, and how to control that the results you get actually match what you need.
+Blndly trust AI and you move into the direction of Vibe Coding. 
+Always test whatever you implement, Verify results, Check how things can break, edge cases or requirements that might have been missed and so on.
 
 #### Risks
 AI is, for example, notoriously bad with safety protocols unless you actively ensure that they are implemented.
@@ -65,3 +78,5 @@ AI also tends to overengineer things, or do things terribly inefficiently (tbf i
 This includes starting to add "enhancements" that are well beyond whats neccessary or just doing inefficient or redundant stuff.
 It might cure your imposter syndrome tho
 # NOTE: Honestly, a great example was me starting to implement managers while sprinting through the whole implementation, just to realise halfway through that Django actually offers all these things, and i knew this.
+
+AI is a tool. It can not replace your brain.

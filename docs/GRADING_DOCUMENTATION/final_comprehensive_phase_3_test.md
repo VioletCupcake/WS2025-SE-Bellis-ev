@@ -1,4 +1,5 @@
 ## to test this, run the test_views_comprehensive.py
+## /home/violet/repos/WS2025-SE-Bellis-ev/src/test_views_comprehensive.py
 ## ignore vscode errors, it runs fine
 
 result:
