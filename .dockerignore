@@ -1,0 +1,52 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+.github/
+
+# Python virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Documentation (not needed in container)
+docs/
+*.md
+*.pdf
+LICENSE
+
+# Test files (optional: remove if you want tests in container)
+test/
+
+# Local environment files (Docker uses its own)
+.env
+.env.local
+.env.example
+
+# Misc
+.coderabbit.yaml
+.editorconfig
+.FOR_THE_FRONTEND_AND_TESTERS

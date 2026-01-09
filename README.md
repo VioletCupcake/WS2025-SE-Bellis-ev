@@ -1,270 +1,205 @@
-<!--
-HEY! I'll be now turning this thing into a proper README for our Project
--->
 <div align="center">
 
-  <img src="assets/logo.png" alt="logo" width="200" height="auto" />
-  <h1>SE2025 Bellis EV Project</h1>
+  <h1>B-EV Case Management System</h1>
+  <p><strong>Bellis e.V. — MVP for SE2025</strong></p>
   
   <p>
-    Now 20% Cooler! 
+    A case management system for documenting and tracking cases of violence against women.
   </p>
-  
-<br />
 
-<!-- Table of Contents -->
-# :notebook_with_decorative_cover: Table of Contents
-
-- [About the Project](#star2-about-the-project)
-  * [Screenshots](#camera-screenshots)
-  * [Tech Stack](#space_invader-tech-stack)
-  * [Features](#dart-features)
-  * [Color Reference](#art-color-reference)
-  * [Environment Variables](#key-environment-variables)
-- [Getting Started](#toolbox-getting-started)
-  * [Prerequisites](#bangbang-prerequisites)
-  * [Installation](#gear-installation)
-  * [Running Tests](#test_tube-running-tests)
-  * [Run Locally](#running-run-locally)
-  * [Deployment](#triangular_flag_on_post-deployment)
-- [Usage](#eyes-usage)
-- [Roadmap](#compass-roadmap)
-- [Contributing](#wave-contributing)
-  * [Code of Conduct](#scroll-code-of-conduct)
-- [FAQ](#grey_question-faq)
-- [License](#warning-license)
-- [Contact](#handshake-contact)
-- [Acknowledgements](#gem-acknowledgements)
-
-  
-
-<!-- About the Project -->
-## :star2: Where we are so far
-
-
-<!-- Screenshots -->
-### :camera: Screenshots
-
-<div align="center"> 
-  <img src="https://placehold.co/600x400?text=Your+Screenshot+here" alt="screenshot" />
 </div>
 
+---
 
-<!-- TechStack -->
-### :space_invader: Tech Stack
+## Table of Contents
 
-<details>
-  <summary>Client</summary>
-  <ul>
-    <li><a href="https://www.typescriptlang.org/">Typescript</a></li>
-    <li><a href="https://nextjs.org/">Next.js</a></li>
-    <li><a href="https://reactjs.org/">React.js</a></li>
-    <li><a href="https://tailwindcss.com/">TailwindCSS</a></li>
-  </ul>
-</details>
+- [Quick Start (Docker)](#-quick-start-docker)
+- [Test Accounts](#-test-accounts)
+- [Tech Stack](#-tech-stack)
+- [Features](#-features)
+- [Local Development](#-local-development)
+- [Environment Variables](#-environment-variables)
+- [Troubleshooting](#-troubleshooting)
+- [License](#-license)
 
-<details>
-  <summary>Server</summary>
-  <ul>
-    <li><a href="https://www.typescriptlang.org/">Typescript</a></li>
-    <li><a href="https://expressjs.com/">Express.js</a></li>
-    <li><a href="https://go.dev/">Golang</a></li>
-    <li><a href="https://nestjs.com/">Nest.js</a></li>
-    <li><a href="https://socket.io/">SocketIO</a></li>
-    <li><a href="https://www.prisma.io/">Prisma</a></li>    
-    <li><a href="https://www.apollographql.com/">Apollo</a></li>
-    <li><a href="https://graphql.org/">GraphQL</a></li>
-  </ul>
-</details>
+---
 
-<details>
-<summary>Database</summary>
-  <ul>
-    <li><a href="https://www.mysql.com/">MySQL</a></li>
-    <li><a href="https://www.postgresql.org/">PostgreSQL</a></li>
-    <li><a href="https://redis.io/">Redis</a></li>
-    <li><a href="https://neo4j.com/">Neo4j</a></li>
-    <li><a href="https://www.mongodb.com/">MongoDB</a></li>
-  </ul>
-</details>
+## 🐳 Quick Start (Docker)
 
-<details>
-<summary>DevOps</summary>
-  <ul>
-    <li><a href="https://www.docker.com/">Docker</a></li>
-    <li><a href="https://www.jenkins.io/">Jenkins</a></li>
-    <li><a href="https://circleci.com/">CircleCLI</a></li>
-  </ul>
-</details>
-
-<!-- Features -->
-### :dart: Features
-
-- Feature 1
-- Feature 2
-- Feature 3
-
-<!-- Color Reference -->
-### :art: Color Reference
-
-| Color             | Hex                                                                |
-| ----------------- | ------------------------------------------------------------------ |
-| Primary Color | ![#222831](https://via.placeholder.com/10/222831?text=+) #222831 |
-| Secondary Color | ![#393E46](https://via.placeholder.com/10/393E46?text=+) #393E46 |
-| Accent Color | ![#00ADB5](https://via.placeholder.com/10/00ADB5?text=+) #00ADB5 |
-| Text Color | ![#EEEEEE](https://via.placeholder.com/10/EEEEEE?text=+) #EEEEEE |
-
-
-<!-- Env Variables -->
-### :key: Environment Variables
-
-To run this project, you will need to add the following environment variables to your .env file
-
-`API_KEY`
-
-`ANOTHER_API_KEY`
-
-<!-- Getting Started -->
-## 	:toolbox: Getting Started
-
-<!-- Prerequisites -->
-### :bangbang: Prerequisites
-
-This project uses Yarn as package manager
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with Compose plugin.
 
 ```bash
- npm install --global yarn
+# 1. Clone the repository
+git clone <repository-url>
+cd WS2025-SE-Bellis-ev
+
+# 2. Start the application
+docker compose up --build
+
+# 3. Open in browser
+# http://localhost:8002/login/
 ```
 
-<!-- Installation -->
-### :gear: Installation
+**That's it.** Docker handles PostgreSQL, migrations, and test data automatically.
 
-Install my-project with npm
+### Stopping the Application
 
 ```bash
-  yarn install my-project
-  cd my-project
-```
-   
-<!-- Running Tests -->
-### :test_tube: Running Tests
+# Stop containers (keeps data)
+docker compose down
 
-To run tests, run the following command
+# Stop and DELETE all data (fresh start)
+docker compose down -v
+```
+
+---
+
+## 👤 Test Accounts
+
+All accounts use password: **`test123`**
+
+| Username | Role | Permissions |
+|----------|------|-------------|
+| `user_basis` | BASIS | View & edit cases |
+| `user_erweitert` | ERWEITERT | + Delete cases, manage reference data |
+| `user_admin` | ADMIN | + Manage users, hard delete, full access |
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Backend** | Python 3.12, Django 5.0 |
+| **Database** | PostgreSQL 15 |
+| **Frontend** | Django Templates, HTML/CSS |
+| **Deployment** | Docker, Docker Compose |
+
+---
+
+## ✨ Features
+
+- **Case Management**: Create, view, edit, and delete cases (Fall)
+- **Multi-step Forms**: Guided case creation with validation
+- **Role-based Access Control**: Three-tier permission system
+- **Consultation Tracking**: Document counseling sessions (Beratung)
+- **Violence Documentation**: Record incidents with categorization (Gewalttat)
+- **German Localization**: Date formats, labels, and UI in German
+
+---
+
+## 💻 Local Development
+
+*For development without Docker (requires local PostgreSQL):*
 
 ```bash
-  yarn test test
+# 1. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate   # Windows
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your PostgreSQL credentials
+
+# 4. Run migrations and seed data
+cd src
+python manage.py migrate
+python manage.py loaddata core/fixtures/seed_data.json
+
+# 5. Start development server
+python manage.py runserver 8002
 ```
 
-<!-- Run Locally -->
-### :running: Run Locally
+---
 
-Clone the project
+## 🔑 Environment Variables
 
-```bash
-  git clone https://github.com/Louis3797/awesome-readme-template.git
+See [.env.example](.env.example) for all options.
+
+| Variable | Docker Value | Local Default |
+|----------|--------------|---------------|
+| `DB_HOST` | `db` (service name) | `localhost` |
+| `DB_NAME` | `bev_dev` | `bev_dev` |
+| `DB_USER` | `bev_user` | `bev_user` |
+| `DB_PASSWORD` | `SE2025.bellis` | *(set in .env)* |
+| `DB_PORT` | `5432` | `5432` |
+| `DEBUG` | `True` | `True` |
+
+**Note:** When using Docker Compose, environment variables are set in `docker-compose.yml` and override any `.env` file. No separate `.env.docker` is needed.
+
+---
+
+## 🔧 Troubleshooting
+
+### Docker Deployment
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Port 8002 in use | Another service running | `docker compose down` or change port in `docker-compose.yml` |
+| Database connection timeout | PostgreSQL not ready | Container retries automatically; check `docker logs bev-postgres` |
+| Permission denied on entrypoint.sh | File not executable | `chmod +x entrypoint.sh` and rebuild |
+| "No such container" | Containers not started | Run `docker compose up --build` |
+| Data not persisting | Volume deleted | Only use `docker compose down -v` for fresh start |
+
+### Application
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Login fails | Wrong password | Password is `test123` for all test users |
+| 403 Forbidden | CSRF or permission | Clear cookies, re-login |
+| "No cases found" | First run | Create a new case via "Neuer Fall" |
+| Form validation errors | Required fields | Check German field labels for requirements |
+| Date format rejected | Wrong format | Use `DD.MM.YYYY` (German) or `YYYY-MM-DD` |
+
+### Invariants
+
+**Docker Deployment:**
+- Container `bev-postgres` must be healthy before `bev-django` starts
+- Migrations run on every container start (idempotent)
+- Seed data loads only if user count = 0
+
+**Application:**
+- All users must have exactly one Role
+- Each Role has exactly one PermissionSet
+- Cases (Fall) require valid PersonenbezogeneDaten
+- Deleted cases are soft-deleted by default (unless hard delete permission)
+
+---
+
+## 📋 Project Structure
+
+```
+WS2025-SE-Bellis-ev/
+├── docker-compose.yml    # Orchestration
+├── Dockerfile            # Django container
+├── entrypoint.sh         # Startup script
+├── requirements.txt      # Python dependencies
+├── .env.example          # Environment template
+├── src/
+│   ├── manage.py
+│   ├── B_EV/             # Django project settings
+│   └── core/             # Main application
+│       ├── models/       # Database models
+│       ├── views/        # Request handlers
+│       ├── forms/        # Form definitions
+│       ├── templates/    # HTML templates
+│       └── fixtures/     # Seed data
+└── docs/                 # Documentation
 ```
 
-Go to the project directory
+---
 
-```bash
-  cd my-project
-```
+## 📄 License
 
-Install dependencies
+See [LICENSE](LICENSE) for details.
 
-```bash
-  yarn install
-```
+---
 
-Start the server
+## 👥 Team
 
-```bash
-  yarn start
-```
-
-
-<!-- Deployment -->
-### :triangular_flag_on_post: Deployment
-
-To deploy this project run
-
-```bash
-  yarn deploy
-```
-
-
-<!-- Usage -->
-## :eyes: Usage
-
-Use this space to tell a little more about your project and how it can be used. Show additional screenshots, code samples, demos or link to other resources.
-
-
-```javascript
-import Component from 'my-project'
-
-function App() {
-  return <Component />
-}
-```
-
-<!-- Roadmap -->
-## :compass: Roadmap
-
-* [x] Todo 1
-* [ ] Todo 2
-
-
-<!-- Contributing -->
-## :wave: Contributing
-
-<a href="https://github.com/Louis3797/awesome-readme-template/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Louis3797/awesome-readme-template" />
-</a>
-
-
-Contributions are always welcome!
-
-See `contributing.md` for ways to get started.
-
-
-<!-- Code of Conduct -->
-### :scroll: Code of Conduct
-
-Please read the [Code of Conduct](https://github.com/Louis3797/awesome-readme-template/blob/master/CODE_OF_CONDUCT.md)
-
-<!-- FAQ -->
-## :grey_question: FAQ
-
-- Question 1
-
-  + Answer 1
-
-- Question 2
-
-  + Answer 2
-
-
-<!-- License -->
-## :warning: License
-
-Distributed under the no License. See LICENSE.txt for more information.
-
-
-<!-- Contact -->
-## :handshake: Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/Louis3797/awesome-readme-template](https://github.com/Louis3797/awesome-readme-template)
-
-
-<!-- Acknowledgments -->
-## :gem: Acknowledgements
-
-Use this section to mention useful resources and libraries that you have used in your projects.
-
- - [Shields.io](https://shields.io/)
- - [Awesome README](https://github.com/matiassingers/awesome-readme)
- - [Emoji Cheat Sheet](https://github.com/ikatyang/emoji-cheat-sheet/blob/master/README.md#travel--places)
- - [Readme Template](https://github.com/othneildrew/Best-README-Template)
+SE2025 Project Team — Bellis e.V. Case Management System
 

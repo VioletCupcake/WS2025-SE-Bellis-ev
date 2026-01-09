@@ -1,0 +1,40 @@
+# B-EV Case Management System - Docker Compose
+# Starts PostgreSQL database and Django application
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: bev-postgres
+    environment:
+      POSTGRES_DB: bev_dev
+      POSTGRES_USER: bev_user
+      POSTGRES_PASSWORD: SE2025.bellis
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # External 5433 to avoid conflict with local PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bev_user -d bev_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: bev-django
+    ports:
+      - "8002:8002"
+    environment:
+      - DB_NAME=bev_dev
+      - DB_USER=bev_user
+      - DB_PASSWORD=SE2025.bellis
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SECRET_KEY=docker-dev-secret-key-not-for-production
+      - DEBUG=True
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

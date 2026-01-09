@@ -1,0 +1,82 @@
+B-EV MVP CASE MANAGEMENT SYSTEM - README & GUIDE
+================================================
+
+Hello and welcome to my new and improved document.
+I chose docker because everything else seemed like a huge pain
+(Especially setting up postgres and such)
+
+PREREQUISITES:
+- Docker Desktop (Windows/Mac) or Docker + Docker Compose (Linux)
+- 4GB RAM, 2GB disk space
+
+
+INSTALLATION (3 STEPS):
+-----------------------
+
+1. Extract the zip file to any location
+
+2. Open terminal in the extracted folder or navigate to it and run:
+
+   docker compose up --build
+
+   (First run takes 2-3 minutes to download and build
+   The console output contains possible error codes as well as logins/URLS)
+
+
+3. When you see "B-EV Case Management System READY", open browser and navigate to:
+
+   http://localhost:8002/login/ for the main app
+   http://localhost:8002/admin/ for the admin panel
+
+
+4. Login with the account you want to test
+
+For the main app MVP, the login data are visible on the login page.
+Here is a seperate overview - only user_erweitert and user_admin have acccess to the admin panel
+
+TEST ACCOUNTS (password: test123):
+-----------------------------------
+- user_basis      (basic permissions)
+- user_erweitert  (extended permissions)
+- user_admin      (full admin access)
+
+TESTING OPTIONS:
+Über "Neuer Fall" einen Fall anlegen
+Im Fall "Neue Beratung", "Neuen Gewaltvorfall" und "Neue Folge der Gewalt" anlegen
+Testing von Conditional displays, field validation, editing, Beratungs-Tracking, deletion
+
+KNOWN LIMITS / ISSUES:
+- New users can't currently be created
+- Archived cases currently stay in the database only and cant be seen by admins
+- newly created entries over the admin panel are probably database only 
+
+
+STOPPING:
+---------
+Press Ctrl+C in terminal, then run:
+
+docker compose down
+
+
+TROUBLESHOOTING:
+----------------
+
+Port 8002 already in use?
+  -> Edit docker-compose.yml, change "8002:8002" to "8003:8002"
+     Then access at http://localhost:8003/login/
+
+Database connection timeout?
+  -> Run: docker compose down -v
+     Then: docker compose up --build
+
+Docker not running?
+  -> Start Docker Desktop (Windows/Mac) or service (Linux)
+
+
+FRESH START (deletes all data):
+--------------------------------
+docker compose down -v
+docker compose up --build
+
+
+That's it. Questions? See README.md in the repo for details.
