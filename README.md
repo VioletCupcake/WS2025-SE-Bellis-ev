@@ -4,7 +4,7 @@
   <p><strong>Bellis e.V. — MVP for SE2025</strong></p>
   
   <p>
-    A case management system for documenting and tracking cases of violence against women.
+    DISCLAIMER: This composition was automatically generated. To be reviewed manually (09.01.2026)
   </p>
 
 </div>
