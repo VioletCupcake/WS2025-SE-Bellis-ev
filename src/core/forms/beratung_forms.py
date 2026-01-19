@@ -52,7 +52,7 @@ class BeratungForm(forms.ModelForm):
         self.fall = kwargs.pop('fall', None)
         super().__init__(*args, **kwargs)
         
-        # Make all fields optional except datum and durchfuehrungsart
+        # Set required fields
         self.fields['datum'].required = True
         self.fields['durchfuehrungsart'].required = True
         self.fields['durchfuehrungsort'].required = True
