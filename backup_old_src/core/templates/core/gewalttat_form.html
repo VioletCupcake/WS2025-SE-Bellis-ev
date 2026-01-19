@@ -1,0 +1,592 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ action }} Gewaltvorfall - B-EV{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>{{ action }} Gewaltvorfall</h1>
+    <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Zurück zum Fall</a>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>Fall:</strong> {{ fall.personenbezogene_daten.alias }} 
+        ({{ fall.get_zustaendige_beratungsstelle_display }})
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <h2>Alter zum Zeitpunkt der Tat</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.alter_zum_zeitpunkt_der_tat.id_for_label }}">Alter</label>
+        {{ form.alter_zum_zeitpunkt_der_tat }}
+        {% if form.alter_zum_zeitpunkt_der_tat.errors %}
+            <ul class="errorlist">
+                {% for error in form.alter_zum_zeitpunkt_der_tat.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label>
+            {{ form.alter_tat_keine_angabe }}
+            Alter: Keine Angabe
+        </label>
+        {% if form.alter_tat_keine_angabe.errors %}
+            <ul class="errorlist">
+                {% for error in form.alter_tat_keine_angabe.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Zeitraum des Gewaltvorfalls</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.zeitraum_von.id_for_label }}">Zeitraum von</label>
+        {{ form.zeitraum_von }}
+        {% if form.zeitraum_von.errors %}
+            <ul class="errorlist">
+                {% for error in form.zeitraum_von.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Datum über Kalender-Widget auswählen oder manuell eintippen</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.zeitraum_bis.id_for_label }}">Zeitraum bis</label>
+        {{ form.zeitraum_bis }}
+        {% if form.zeitraum_bis.errors %}
+            <ul class="errorlist">
+                {% for error in form.zeitraum_bis.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Achtung: Das Enddatum sollte nicht vor dem Startdatum liegen.</small>
+    </div>
+    
+    <div class="form-group">
+        <label>
+            {{ form.zeitraum_keine_angabe }}
+            Zeitraum: Keine Angabe
+        </label>
+        {% if form.zeitraum_keine_angabe.errors %}
+            <ul class="errorlist">
+                {% for error in form.zeitraum_keine_angabe.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Anzahl und Art der Vorfälle</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.zahl_der_vorfaelle.id_for_label }}">Anzahl der Vorfälle</label>
+        {{ form.zahl_der_vorfaelle }}
+        {% if form.zahl_der_vorfaelle.errors %}
+            <ul class="errorlist">
+                {% for error in form.zahl_der_vorfaelle.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">einmalig, mehrere oder genaue Zahl</small>
+    </div>
+    
+    <div class="form-group" id="zahl_der_vorfaelle_genau_wrapper">
+        <label for="{{ form.zahl_der_vorfaelle_genau.id_for_label }}">
+            Genaue Anzahl
+        </label>
+        {{ form.zahl_der_vorfaelle_genau }}
+        {% if form.zahl_der_vorfaelle_genau.errors %}
+            <ul class="errorlist">
+                {% for error in form.zahl_der_vorfaelle_genau.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <!-- Gewaltarten with hierarchical checkboxes -->
+    <!-- main categories shown normally, subcategories indented and conditionally visible -->
+    <div class="form-group">
+        <label>Gewaltarten</label>
+        {% if form.gewalttat_arten.errors %}
+            <ul class="errorlist">
+                {% for error in form.gewalttat_arten.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <div id="gewalttat_arten_container" style="margin-top: 10px;">
+            {% for art in form.gewalttat_hierarchy.main_categories %}
+                <div class="gewalttat-checkbox" style="margin-bottom: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" 
+                               name="gewalttat_arten" 
+                               value="{{ art.art_id }}"
+                               id="gewalttat_{{ art.art_id }}"
+                               data-is-parent="{% if form.gewalttat_hierarchy.subcategories_map|dictsort:art.art_id %}true{% else %}false{% endif %}"
+                               {% if art in form.gewalttat_arten.value %}checked{% endif %}>
+                        {{ art.name }}
+                    </label>
+                    
+                    <!-- Subcategories (indented, shown when parent checked) -->
+                    {% with subcats=form.gewalttat_hierarchy.subcategories_map %}
+                        {% for key, subs in subcats.items %}
+                            {% if key == art.art_id|stringformat:"s" and subs %}
+                                <div class="subcategory-wrapper" 
+                                     id="subcats_{{ art.art_id }}" 
+                                     style="margin-left: 25px; margin-top: 5px; padding: 10px; background: #f8f9fa; border-radius: 4px; display: none;">
+                                    <small style="color: #666; display: block; margin-bottom: 8px;">
+                                        Bitte mindestens eine Unterkategorie wählen:
+                                    </small>
+                                    {% for sub in subs %}
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 4px;">
+                                            <input type="checkbox" 
+                                                   name="gewalttat_arten" 
+                                                   value="{{ sub.art_id }}"
+                                                   id="gewalttat_{{ sub.art_id }}"
+                                                   data-parent="{{ art.art_id }}"
+                                                   {% if sub in form.gewalttat_arten.value %}checked{% endif %}>
+                                            {{ sub.name }}
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            {% endfor %}
+        </div>
+        <small class="text-muted">Mehrfachauswahl möglich</small>
+    </div>
+    
+    <div class="form-group" id="art_andere_details_wrapper">
+        <label for="{{ form.art_der_gewalt_andere_details.id_for_label }}">
+            Details zu "Andere" Gewaltart
+        </label>
+        {{ form.art_der_gewalt_andere_details }}
+        {% if form.art_der_gewalt_andere_details.errors %}
+            <ul class="errorlist">
+                {% for error in form.art_der_gewalt_andere_details.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Täter*innen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.anzahl_taeterinnen.id_for_label }}">Anzahl Täter*innen</label>
+        {{ form.anzahl_taeterinnen }}
+        {% if form.anzahl_taeterinnen.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzahl_taeterinnen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">1, mehrere oder genaue Zahl</small>
+    </div>
+    
+    <div class="form-group" id="anzahl_taeterinnen_genau_wrapper">
+        <label for="{{ form.anzahl_taeterinnen_genau.id_for_label }}">
+            Genaue Anzahl
+        </label>
+        {{ form.anzahl_taeterinnen_genau }}
+        {% if form.anzahl_taeterinnen_genau.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzahl_taeterinnen_genau.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <!-- Dynamic Täterinnen formset - way better than typing JSON manually -->
+    <div class="form-group">
+        <label>Täter*innen Details</label>
+        {{ form.taeterinnen_details }}
+        {% if form.taeterinnen_details.errors %}
+            <ul class="errorlist">
+                {% for error in form.taeterinnen_details.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <div id="taeterinnen_formset" style="margin-top: 10px;">
+            <!-- rows get added here by JS -->
+        </div>
+        
+        <button type="button" id="add_taeter_btn" class="btn btn-secondary" style="margin-top: 10px;">
+            + Weitere:r Täter:in hinzufügen
+        </button>
+        <small class="text-muted" style="display: block; margin-top: 5px;">
+            Fügen Sie für jede:n Täter:in Geschlecht und Verhältnis zur ratsuchenden Person hinzu.
+        </small>
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Tatort und weitere Informationen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.tatort.id_for_label }}">Tatort</label>
+        {{ form.tatort }}
+        {% if form.tatort.errors %}
+            <ul class="errorlist">
+                {% for error in form.tatort.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.anzeige.id_for_label }}">Anzeige</label>
+        {{ form.anzeige }}
+        {% if form.anzeige.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzeige.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Wurde Anzeige erstattet?</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.medizinische_versorgung.id_for_label }}">Medizinische Versorgung</label>
+        {{ form.medizinische_versorgung }}
+        {% if form.medizinische_versorgung.errors %}
+            <ul class="errorlist">
+                {% for error in form.medizinische_versorgung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.vertrauliche_spurensicherung.id_for_label }}">
+            Vertrauliche Spurensicherung
+        </label>
+        {{ form.vertrauliche_spurensicherung }}
+        {% if form.vertrauliche_spurensicherung.errors %}
+            <ul class="errorlist">
+                {% for error in form.vertrauliche_spurensicherung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Mitbetroffene Kinder</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.mitbetroffene_kinder.id_for_label }}">Anzahl mitbetroffener Kinder</label>
+        {{ form.mitbetroffene_kinder }}
+        {% if form.mitbetroffene_kinder.errors %}
+            <ul class="errorlist">
+                {% for error in form.mitbetroffene_kinder.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.davon_direkt_betroffen.id_for_label }}">Davon direkt betroffen</label>
+        {{ form.davon_direkt_betroffen }}
+        {% if form.davon_direkt_betroffen.errors %}
+            <ul class="errorlist">
+                {% for error in form.davon_direkt_betroffen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">Kann nicht größer sein als die Gesamtanzahl</small>
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Notizen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.gewalt_notizen.id_for_label }}">Weitere Informationen</label>
+        {{ form.gewalt_notizen }}
+        {% if form.gewalt_notizen.errors %}
+            <ul class="errorlist">
+                {% for error in form.gewalt_notizen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <small class="text-muted">
+            Weitere Informationen zum Gewaltvorfall (z.B. Kontext, Umstände)
+        </small>
+    </div>
+    
+    {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8; margin-bottom: 20px;">
+        <p style="margin: 0;">
+            <strong>ℹ️ Hinweis:</strong> Alle Felder sind optional, außer die Auswahl mindestens 
+            einer Gewaltart. Speichern Sie nur die Informationen, die vorliegen.
+        </p>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function toggleField(wrapperId, show) {
+        var el = document.getElementById(wrapperId);
+        if (el) el.style.display = show ? '' : 'none';
+    }
+    
+    // zahl_der_vorfaelle -> genau
+    var zahlVorfaelle = document.getElementById('id_zahl_der_vorfaelle');
+    function updateZahlVorfaelle() {
+        toggleField('zahl_der_vorfaelle_genau_wrapper', zahlVorfaelle.value === 'GENAUE_ZAHL');
+    }
+    if (zahlVorfaelle) {
+        zahlVorfaelle.addEventListener('change', updateZahlVorfaelle);
+        updateZahlVorfaelle();
+    }
+    
+    // anzahl_taeterinnen -> genau
+    var anzahlTaeter = document.getElementById('id_anzahl_taeterinnen');
+    function updateAnzahlTaeter() {
+        toggleField('anzahl_taeterinnen_genau_wrapper', anzahlTaeter.value === 'GENAUE_ZAHL');
+    }
+    if (anzahlTaeter) {
+        anzahlTaeter.addEventListener('change', updateAnzahlTaeter);
+        updateAnzahlTaeter();
+    }
+    
+    // ========================================
+    // Hierarchical Gewalttat-Arten checkboxes
+    // shows/hides subcategories based on parent selection
+    // ========================================
+    
+    var gewalttatContainer = document.getElementById('gewalttat_arten_container');
+    if (gewalttatContainer) {
+        // find all parent checkboxes and set up listeners
+        var parentCheckboxes = gewalttatContainer.querySelectorAll('input[type="checkbox"][id^="gewalttat_"]:not([data-parent])');
+        
+        parentCheckboxes.forEach(function(checkbox) {
+            var artId = checkbox.value;
+            var subcatWrapper = document.getElementById('subcats_' + artId);
+            
+            if (subcatWrapper) {
+                // toggle subcategory visibility
+                function updateSubcats() {
+                    subcatWrapper.style.display = checkbox.checked ? 'block' : 'none';
+                    
+                    // if unchecking parent, also uncheck all subcategories
+                    if (!checkbox.checked) {
+                        subcatWrapper.querySelectorAll('input[type="checkbox"]').forEach(function(sub) {
+                            sub.checked = false;
+                        });
+                    }
+                }
+                
+                checkbox.addEventListener('change', updateSubcats);
+                // initial state
+                updateSubcats();
+            }
+        });
+    }
+    
+    // "Andere" gewaltart details visibility
+    // bit hacky but we look for checkbox with "Andere" in the label
+    var andereCheckbox = null;
+    gewalttatContainer.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+        var label = cb.closest('label');
+        if (label && label.textContent.trim() === 'Andere') {
+            andereCheckbox = cb;
+        }
+    });
+    
+    if (andereCheckbox) {
+        function updateAndereDetails() {
+            toggleField('art_andere_details_wrapper', andereCheckbox.checked);
+        }
+        andereCheckbox.addEventListener('change', updateAndereDetails);
+        updateAndereDetails();
+    }
+    
+    // ========================================
+    // Dynamic Täterinnen Formset
+    // way better than making users type JSON lol
+    // ========================================
+    
+    var taeterFormset = document.getElementById('taeterinnen_formset');
+    var addTaeterBtn = document.getElementById('add_taeter_btn');
+    var taeterHiddenField = document.getElementById('id_taeterinnen_details');
+    var taeterRowCount = 0;
+    
+    // geschlecht options - from PersonenbezogeneDaten choices
+    var geschlechtOptions = [
+        {value: '', label: '-- Geschlecht --'},
+        {value: 'CIS_W', label: 'cis weiblich'},
+        {value: 'CIS_M', label: 'cis männlich'},
+        {value: 'TRANS_W', label: 'trans weiblich'},
+        {value: 'TRANS_M', label: 'trans männlich'},
+        {value: 'TRANS_NB', label: 'trans nicht binär'},
+        {value: 'INTER', label: 'inter'},
+        {value: 'AGENDER', label: 'agender'},
+        {value: 'DIVERS', label: 'divers'},
+        {value: 'KEINE_ANGABE', label: 'keine Angabe'}
+    ];
+    
+    // verhältnis options - fixed list from validator
+    var verhaeltnisOptions = [
+        {value: '', label: '-- Verhältnis --'},
+        {value: 'Unbekannte:r', label: 'Unbekannte:r'},
+        {value: 'Bekannte:r', label: 'Bekannte:r'},
+        {value: 'Partner:in', label: 'Partner:in'},
+        {value: 'Partner:in ehemalig', label: 'Partner:in ehemalig'},
+        {value: 'Ehepartner:in oder eingetragene:r Lebenspartner:in', label: 'Ehepartner:in oder eingetragene:r Lebenspartner:in'},
+        {value: 'andere Familienangehörige', label: 'andere Familienangehörige'},
+        {value: 'sonstige Personen', label: 'sonstige Personen'},
+        {value: 'keine Angabe', label: 'keine Angabe'}
+    ];
+    
+    function createSelectElement(options, selectedValue) {
+        var select = document.createElement('select');
+        select.className = 'form-control';
+        select.style.cssText = 'flex: 1; min-width: 150px;';
+        
+        options.forEach(function(opt) {
+            var option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.value === selectedValue) option.selected = true;
+            select.appendChild(option);
+        });
+        
+        select.addEventListener('change', serializeTaeterinnen);
+        return select;
+    }
+    
+    function addTaeterRow(geschlecht, verhaeltnis) {
+        geschlecht = geschlecht || '';
+        verhaeltnis = verhaeltnis || '';
+        
+        var row = document.createElement('div');
+        row.className = 'taeter-row';
+        row.style.cssText = 'display: flex; gap: 10px; align-items: center; margin-bottom: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;';
+        row.dataset.rowId = taeterRowCount++;
+        
+        var geschlechtSelect = createSelectElement(geschlechtOptions, geschlecht);
+        geschlechtSelect.dataset.field = 'geschlecht';
+        
+        var verhaeltnisSelect = createSelectElement(verhaeltnisOptions, verhaeltnis);
+        verhaeltnisSelect.dataset.field = 'verhaeltnis';
+        
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-danger btn-sm';
+        removeBtn.innerHTML = '🗑️';
+        removeBtn.title = 'Entfernen';
+        removeBtn.style.cssText = 'padding: 5px 10px;';
+        removeBtn.addEventListener('click', function() {
+            row.remove();
+            serializeTaeterinnen();
+        });
+        
+        row.appendChild(geschlechtSelect);
+        row.appendChild(verhaeltnisSelect);
+        row.appendChild(removeBtn);
+        
+        taeterFormset.appendChild(row);
+        serializeTaeterinnen();
+    }
+    
+    function serializeTaeterinnen() {
+        // collect all rows and build JSON array
+        var rows = taeterFormset.querySelectorAll('.taeter-row');
+        var data = [];
+        
+        rows.forEach(function(row) {
+            var geschlecht = row.querySelector('[data-field="geschlecht"]').value;
+            var verhaeltnis = row.querySelector('[data-field="verhaeltnis"]').value;
+            
+            // only include if at least one field filled
+            if (geschlecht || verhaeltnis) {
+                data.push({
+                    geschlecht: geschlecht,
+                    verhaeltnis_zur_ratsuchenden_person: verhaeltnis
+                });
+            }
+        });
+        
+        // update hidden field
+        taeterHiddenField.value = data.length > 0 ? JSON.stringify(data) : '';
+    }
+    
+    // add button handler
+    if (addTaeterBtn) {
+        addTaeterBtn.addEventListener('click', function() {
+            addTaeterRow();
+        });
+    }
+    
+    // load existing data on edit
+    if (taeterHiddenField && taeterHiddenField.value) {
+        try {
+            var existingData = JSON.parse(taeterHiddenField.value);
+            if (Array.isArray(existingData)) {
+                existingData.forEach(function(entry) {
+                    addTaeterRow(entry.geschlecht, entry.verhaeltnis_zur_ratsuchenden_person);
+                });
+            }
+        } catch (e) {
+            // invalid JSON, start fresh
+            console.warn('Could not parse existing taeterinnen_details:', e);
+        }
+    }
+    
+    // if no rows exist, add one empty row to start
+    if (taeterFormset.children.length === 0) {
+        addTaeterRow();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,360 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ action }} Fall - B-EV{% endblock %}
+
+{% block content %}
+<h1>{{ action }} Fall</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <h2>Fallinformationen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.zustaendige_beratungsstelle.id_for_label }}">
+            Zuständige Beratungsstelle *
+        </label>
+        {{ form.zustaendige_beratungsstelle }}
+        {% if form.zustaendige_beratungsstelle.errors %}
+            <ul class="errorlist">
+                {% for error in form.zustaendige_beratungsstelle.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.informationsquelle.id_for_label }}">Woher hat die ratsuchende Person von der Beratungsstelle erfahren?</label>
+        {{ form.informationsquelle }}
+        {% if form.informationsquelle.errors %}
+            <ul class="errorlist">
+                {% for error in form.informationsquelle.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group" id="informationsquelle_andere_wrapper">
+        <label for="{{ form.informationsquelle_andere_details.id_for_label }}">
+            Details zur Informationsquelle
+        </label>
+        {{ form.informationsquelle_andere_details }}
+        {% if form.informationsquelle_andere_details.errors %}
+            <ul class="errorlist">
+                {% for error in form.informationsquelle_andere_details.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label>
+            {{ form.dolmetschung_in_anspruch_genommen }}
+            Wurde Dolmetschung in Anspruch genommen?
+        </label>
+    </div>
+    
+    <div class="form-group" id="dolmetschung_stunden_wrapper">
+        <label for="{{ form.anzahl_dolmetschungen_stunden.id_for_label }}">
+            Anzahl der Dolmetschungs-Stunden
+        </label>
+        {{ form.anzahl_dolmetschungen_stunden }}
+        {% if form.anzahl_dolmetschungen_stunden.errors %}
+            <ul class="errorlist">
+                {% for error in form.anzahl_dolmetschungen_stunden.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group" id="dolmetschung_sprachen_wrapper">
+        <label for="{{ form.dolmetschung_sprachen.id_for_label }}">Dolmetschungs-Sprachen</label>
+        {{ form.dolmetschung_sprachen }}
+        {% if form.dolmetschung_sprachen.errors %}
+            <ul class="errorlist">
+                {% for error in form.dolmetschung_sprachen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.weitere_notizen.id_for_label }}">Weitere Notizen</label>
+        {{ form.weitere_notizen }}
+        {% if form.weitere_notizen.errors %}
+            <ul class="errorlist">
+                {% for error in form.weitere_notizen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Personenbezogene Daten</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.alias.id_for_label }}">Alias (Pseudonym) *</label>
+        {{ form.alias }}
+        <small class="text-muted">Eindeutiger Identifikator für diesen Fall (z.B. MS_001)</small>
+        {% if form.alias.errors %}
+            <ul class="errorlist">
+                {% for error in form.alias.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.rolle_der_ratsuchenden_person.id_for_label }}">
+            Rolle der ratsuchenden Person *
+        </label>
+        {{ form.rolle_der_ratsuchenden_person }}
+        {% if form.rolle_der_ratsuchenden_person.errors %}
+            <ul class="errorlist">
+                {% for error in form.rolle_der_ratsuchenden_person.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.alter.id_for_label }}">Alter</label>
+        {{ form.alter }}
+        {% if form.alter.errors %}
+            <ul class="errorlist">
+                {% for error in form.alter.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label>
+            {{ form.alter_keine_angabe }}
+            Alter: Keine Angabe
+        </label>
+        {% if form.alter_keine_angabe.errors %}
+            <ul class="errorlist">
+                {% for error in form.alter_keine_angabe.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.geschlechtsidentitaet.id_for_label }}">Geschlechtsidentität</label>
+        {{ form.geschlechtsidentitaet }}
+        {% if form.geschlechtsidentitaet.errors %}
+            <ul class="errorlist">
+                {% for error in form.geschlechtsidentitaet.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.sexualitaet.id_for_label }}">Sexualität</label>
+        {{ form.sexualitaet }}
+        {% if form.sexualitaet.errors %}
+            <ul class="errorlist">
+                {% for error in form.sexualitaet.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.wohnort.id_for_label }}">Wohnort</label>
+        {{ form.wohnort }}
+        {% if form.wohnort.errors %}
+            <ul class="errorlist">
+                {% for error in form.wohnort.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.wohnort_details.id_for_label }}">Wohnort Details</label>
+        {{ form.wohnort_details }}
+        {% if form.wohnort_details.errors %}
+            <ul class="errorlist">
+                {% for error in form.wohnort_details.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.staatsangehoerigkeit_deutsch.id_for_label }}">Staatsangehörigkeit</label>
+        {{ form.staatsangehoerigkeit_deutsch }}
+        {% if form.staatsangehoerigkeit_deutsch.errors %}
+            <ul class="errorlist">
+                {% for error in form.staatsangehoerigkeit_deutsch.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group" id="staatsangehoerigkeit_land_wrapper">
+        <label for="{{ form.staatsangehoerigkeit_land.id_for_label }}">
+            Staatsangehörigkeit Land
+        </label>
+        {{ form.staatsangehoerigkeit_land }}
+        {% if form.staatsangehoerigkeit_land.errors %}
+            <ul class="errorlist">
+                {% for error in form.staatsangehoerigkeit_land.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    
+    <div class="form-group">
+        <label for="{{ form.berufliche_situation.id_for_label }}">Berufliche Situation</label>
+        {{ form.berufliche_situation }}
+        {% if form.berufliche_situation.errors %}
+            <ul class="errorlist">
+                {% for error in form.berufliche_situation.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.schwerbehinderung.id_for_label }}">Schwerbehinderung</label>
+        {{ form.schwerbehinderung }}
+        {% if form.schwerbehinderung.errors %}
+            <ul class="errorlist">
+                {% for error in form.schwerbehinderung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group" id="form_der_behinderung_wrapper">
+        <label for="{{ form.form_der_behinderung.id_for_label }}">Form der Behinderung</label>
+        {{ form.form_der_behinderung }}
+        {% if form.form_der_behinderung.errors %}
+            <ul class="errorlist">
+                {% for error in form.form_der_behinderung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group" id="grad_der_behinderung_wrapper">
+        <label for="{{ form.grad_der_behinderung.id_for_label }}">Grad der Behinderung (%)</label>
+        {{ form.grad_der_behinderung }}
+        {% if form.grad_der_behinderung.errors %}
+            <ul class="errorlist">
+                {% for error in form.grad_der_behinderung.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.personenbezogene_notizen.id_for_label }}">Personenbezogene Notizen</label>
+        {{ form.personenbezogene_notizen }}
+        {% if form.personenbezogene_notizen.errors %}
+            <ul class="errorlist">
+                {% for error in form.personenbezogene_notizen.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <a href="{% url 'core:case_list' %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// conditional field visibility
+document.addEventListener('DOMContentLoaded', function() {
+    // helper to show/hide wrapper divs
+    function toggleField(wrapperId, show) {
+        var el = document.getElementById(wrapperId);
+        if (el) el.style.display = show ? '' : 'none';
+    }
+    
+    // informationsquelle -> andere details
+    var infoQuelle = document.getElementById('id_informationsquelle');
+    function updateInfoQuelle() {
+        toggleField('informationsquelle_andere_wrapper', infoQuelle.value === 'ANDERE');
+    }
+    if (infoQuelle) {
+        infoQuelle.addEventListener('change', updateInfoQuelle);
+        updateInfoQuelle();
+    }
+    
+    // staatsangehoerigkeit -> land
+    var staatsang = document.getElementById('id_staatsangehoerigkeit_deutsch');
+    function updateStaatsang() {
+        toggleField('staatsangehoerigkeit_land_wrapper', staatsang.value === 'NICHT_DEUTSCH');
+    }
+    if (staatsang) {
+        staatsang.addEventListener('change', updateStaatsang);
+        updateStaatsang();
+    }
+    
+    // schwerbehinderung -> form + grad
+    var schwerbeh = document.getElementById('id_schwerbehinderung');
+    function updateSchwerbeh() {
+        var show = schwerbeh.value === 'JA';
+        toggleField('form_der_behinderung_wrapper', show);
+        toggleField('grad_der_behinderung_wrapper', show);
+    }
+    if (schwerbeh) {
+        schwerbeh.addEventListener('change', updateSchwerbeh);
+        updateSchwerbeh();
+    }
+    
+    // dolmetschung checkbox -> stunden + sprachen fields
+    var dolmetschungCheck = document.getElementById('id_dolmetschung_in_anspruch_genommen');
+    function updateDolmetschung() {
+        var show = dolmetschungCheck && dolmetschungCheck.checked;
+        toggleField('dolmetschung_stunden_wrapper', show);
+        toggleField('dolmetschung_sprachen_wrapper', show);
+    }
+    if (dolmetschungCheck) {
+        dolmetschungCheck.addEventListener('change', updateDolmetschung);
+        updateDolmetschung();
+    }
+});
+</script>
+{% endblock %}

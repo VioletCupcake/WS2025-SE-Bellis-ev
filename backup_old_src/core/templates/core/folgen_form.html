@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ action }} Folge der Gewalt - B-EV{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>{{ action }} Folge der Gewalt</h1>
+    <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Zurück zum Fall</a>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>Fall:</strong> {{ fall.personenbezogene_daten.alias }} 
+        ({{ fall.get_zustaendige_beratungsstelle_display }})
+    </p>
+</div>
+
+{% if no_available_folgen %}
+    <div style="background-color: #fff3cd; padding: 20px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+        <h2 style="margin-top: 0; color: #856404;">ℹ️ Alle Folgen bereits verknüpft</h2>
+        <p style="margin-bottom: 0; color: #856404;">
+            Alle verfügbaren Folgen der Gewalt sind bereits mit diesem Fall verknüpft.
+            Sie können bestehende Verknüpfungen bearbeiten oder löschen.
+        </p>
+    </div>
+    <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Zurück zum Fall</a>
+{% else %}
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div style="background-color: #f8d7da; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                {% for error in form.non_field_errors %}
+                    <p style="margin: 0; color: #721c24;">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="{{ form.folge.id_for_label }}">Folge der Gewalt *</label>
+            {{ form.folge }}
+            {% if form.folge.errors %}
+                <ul class="errorlist">
+                    {% for error in form.folge.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <small class="text-muted">Wählen Sie die Folge der Gewalt aus. Folgen sind nach Kategorien sortiert.</small>
+        </div>
+        
+        <hr style="margin: 30px 0;">
+        
+        <div class="form-group">
+            <label for="{{ form.weitere_informationen.id_for_label }}">Weitere Informationen</label>
+            {{ form.weitere_informationen }}
+            {% if form.weitere_informationen.errors %}
+                <ul class="errorlist">
+                    {% for error in form.weitere_informationen.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <small class="text-muted">Optionale fallspezifische Details zu dieser Folge (z.B. "Seit 6 Monaten in Behandlung").</small>
+        </div>
+        
+        <hr style="margin: 30px 0;">
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="submit" class="btn btn-primary">{{ action }}</button>
+            {% if action == 'Hinzufügen' %}
+                <!-- save and loop back for another entry - handy when adding multiple folgen -->
+                <button type="submit" name="action" value="add_another" class="btn btn-success">
+                    Speichern &amp; Weitere hinzufügen
+                </button>
+            {% endif %}
+            <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+        </div>
+    </form>
+{% endif %}
+
+{% endblock %}

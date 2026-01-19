@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Fall abschließen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Fall abschließen</h1>
+
+<div style="background-color: #fff3cd; padding: 20px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+    <h2 style="margin-top: 0;">⚠️ Bestätigung erforderlich</h2>
+    <p style="margin-bottom: 0;">
+        Möchten Sie den Fall <strong>{{ fall.personenbezogene_daten.alias }}</strong> wirklich abschließen?
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Fallinformationen</h3>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 40%;">Alias</th>
+            <td>{{ fall.personenbezogene_daten.alias }}</td>
+        </tr>
+        <tr>
+            <th>Beratungsstelle</th>
+            <td>{{ fall.get_zustaendige_beratungsstelle_display }}</td>
+        </tr>
+        <tr>
+            <th>Erstellt am</th>
+            <td>{{ fall.erstellungsdatum|date:"d.m.Y" }}</td>
+        </tr>
+        <tr>
+            <th>Anzahl Beratungen</th>
+            <td>{{ fall.beratungsanzahl }}</td>
+        </tr>
+        <tr>
+            <th>Letzte Beratung</th>
+            <td>
+                {% if fall.letzte_beratung %}
+                    {{ fall.letzte_beratung|date:"d.m.Y" }}
+                {% else %}
+                    <span class="text-muted">-</span>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>ℹ️ Hinweis:</strong> Nach dem Abschließen wird der Fall mit dem Status 
+        "Abgeschlossen" markiert und das Abschlussdatum automatisch gesetzt. 
+        Der Fall bleibt weiterhin einsehbar.
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">Fall abschließen</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

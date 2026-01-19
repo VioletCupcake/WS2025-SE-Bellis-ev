@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Beratung löschen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Beratung löschen</h1>
+
+<div style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">⚠️ Bestätigung erforderlich</h2>
+    <p style="margin-bottom: 0; color: #721c24;">
+        Möchten Sie diese Beratung wirklich löschen?
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Beratungsinformationen</h3>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 40%;">Fall</th>
+            <td>
+                <a href="{% url 'core:case_detail' fall.fall_id %}">
+                    {{ fall.personenbezogene_daten.alias }}
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <th>Datum</th>
+            <td>{{ beratung.datum|date:"d.m.Y" }}</td>
+        </tr>
+        <tr>
+            <th>Durchführungsart</th>
+            <td>{{ beratung.get_durchfuehrungsart_display }}</td>
+        </tr>
+        <tr>
+            <th>Durchführungsort</th>
+            <td>{{ beratung.get_durchfuehrungsort_display }}</td>
+        </tr>
+        {% if beratung.weitere_notizen %}
+            <tr>
+                <th>Notizen</th>
+                <td style="white-space: pre-wrap;">{{ beratung.weitere_notizen }}</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>ℹ️ Hinweis:</strong> Nach dem Löschen wird die Anzahl der Beratungen für 
+        Fall "{{ fall.personenbezogene_daten.alias }}" automatisch aktualisiert.
+        Diese Aktion kann nicht rückgängig gemacht werden.
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Beratung löschen</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

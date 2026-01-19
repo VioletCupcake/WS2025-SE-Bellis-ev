@@ -1,0 +1,99 @@
+Django – Export von Daten (csv, xlsx, PDF)
+
+Benötigte Libraries:
+pip install openpyxl pandas weasyprint
+•	openpyxl → Excel-Dateien (.xlsx)
+•	pandas → einfacher Umgang mit Daten und Excel/CSV Export
+•	weasyprint → PDF-Erstellung aus HTML
+
+
+Für Export:
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import pandas as pd
+from myapp.models import MyModel                        #myapp ist Name der App (Bellis…)
+                                                        #models.py  = Ort wo Datenbank liegt 
+                                                        #MyModel = Python-Klasse, die Django benutzt, um die Tabelle zu repräsentieren.
+                                                         Daten aus Datenbank holen:         data = MyModel.objects.all().values('feld1', 'feld2')
+                     
+
+# --- CSV Export ---
+def export_csv(request):
+    data = MyModel.objects.all().values('feld1', 'feld2', 'feld3')
+    df = pd.DataFrame(data)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="daten.csv"'
+    
+    df.to_csv(response, index=False)
+    return response
+
+# --- Excel Export ---
+def export_xlsx(request):
+    data = MyModel.objects.all().values('feld1', 'feld2', 'feld3')
+    df = pd.DataFrame(data)
+    
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="daten.xlsx"'
+    
+    df.to_excel(response, index=False)
+    return response
+
+# --- PDF Export ---
+def export_pdf(request):
+    daten = MyModel.objects.all()
+    html_string = render_to_string('export_template.html', {'daten': daten})
+    
+    pdf_file = HTML(string=html_string).write_pdf()
+    
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="daten.pdf"'
+    return response
+
+------------------------------------------
+
+
+Template für PDF (export_template.html)
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; text-align: left; }
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Datenexport</h1>
+    <table>
+        <tr>
+            <th>Feld1</th>
+            <th>Feld2</th>
+            <th>Feld3</th>
+        </tr>
+        {% for obj in daten %}
+        <tr>
+            <td>{{ obj.feld1 }}</td>
+            <td>{{ obj.feld2 }}</td>
+            <td>{{ obj.feld3 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+
+URL’s einrichten
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('export/csv/', views.export_csv, name='export_csv'),
+    path('export/xlsx/', views.export_xlsx, name='export_xlsx'),
+    path('export/pdf/', views.export_pdf, name='export_pdf'),
+]
+
+	-- > Django kümmert sich um Response und Download.
+

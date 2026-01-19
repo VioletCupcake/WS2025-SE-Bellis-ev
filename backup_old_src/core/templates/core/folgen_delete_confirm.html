@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Folge der Gewalt entfernen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Folge der Gewalt entfernen</h1>
+
+<div style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">⚠️ Bestätigung erforderlich</h2>
+    <p style="margin-bottom: 0; color: #721c24;">
+        Möchten Sie diese Verknüpfung wirklich entfernen?
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Folge der Gewalt</h3>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 40%;">Fall</th>
+            <td>
+                <a href="{% url 'core:case_detail' fall.fall_id %}">
+                    {{ fall.personenbezogene_daten.alias }}
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <th>Folge</th>
+            <td>{{ folgen_relation.folge.name }}</td>
+        </tr>
+        <tr>
+            <th>Kategorie</th>
+            <td>{{ folgen_relation.folge.get_kategorie_display }}</td>
+        </tr>
+        {% if folgen_relation.weitere_informationen %}
+            <tr>
+                <th>Weitere Informationen</th>
+                <td style="white-space: pre-wrap;">{{ folgen_relation.weitere_informationen }}</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+
+<div style="background-color: #d4edda; padding: 15px; border-radius: 4px; border-left: 4px solid #28a745; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>ℹ️ Hinweis:</strong> Es wird nur die Verknüpfung zwischen dem Fall und dieser Folge entfernt.
+        Die Folge "{{ folgen_relation.folge.name }}" bleibt im System für andere Fälle verfügbar.
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div style="display: flex; gap: 10px;">
+        <button type="submit" class="btn btn-danger">Ja, Verknüpfung entfernen</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

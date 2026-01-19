@@ -1,0 +1,107 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Fall löschen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Fall löschen</h1>
+
+<div style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">⚠️ Achtung: Löschvorgang</h2>
+    <p style="margin-bottom: 0; color: #721c24;">
+        Sie sind dabei, den Fall <strong>{{ fall.personenbezogene_daten.alias }}</strong> zu löschen.
+        Bitte wählen Sie die Art der Löschung.
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Fallinformationen</h3>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 40%;">Alias</th>
+            <td>{{ fall.personenbezogene_daten.alias }}</td>
+        </tr>
+        <tr>
+            <th>Beratungsstelle</th>
+            <td>{{ fall.get_zustaendige_beratungsstelle_display }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{{ fall.get_status_display }}</td>
+        </tr>
+        <tr>
+            <th>Erstellt am</th>
+            <td>{{ fall.erstellungsdatum|date:"d.m.Y" }}</td>
+        </tr>
+        <tr>
+            <th>Anzahl Beratungen</th>
+            <td>{{ fall.beratungsanzahl }}</td>
+        </tr>
+        <tr>
+            <th>Anzahl Gewalttaten</th>
+            <td>{{ fall.gewalttaten.count }}</td>
+        </tr>
+    </table>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    {% if can_soft_delete %}
+        <div style="background-color: #fff3cd; padding: 20px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+            <h3 style="margin-top: 0;">📦 Archivieren (Soft Delete)</h3>
+            <p>
+                Der Fall wird auf den Status "ARCHIVIERT" gesetzt und ist nicht mehr in der 
+                aktiven Fallübersicht sichtbar. Alle Daten bleiben erhalten und können 
+                später wiederhergestellt werden.
+            </p>
+            <button type="submit" name="delete_type" value="soft" class="btn" style="background-color: #ffc107; color: #000;">
+                Fall archivieren
+            </button>
+        </div>
+    {% endif %}
+    
+    {% if can_hard_delete %}
+        <div style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #721c24;">🗑️ Permanent löschen (Hard Delete)</h3>
+            <p style="color: #721c24;">
+                <strong>⚠️ WARNUNG:</strong> Der Fall und alle zugehörigen Daten werden 
+                <strong>unwiderruflich gelöscht</strong>. Dies umfasst:
+            </p>
+            <ul style="color: #721c24; margin-left: 20px;">
+                <li>Personenbezogene Daten</li>
+                <li>Alle Beratungen ({{ fall.beratungsanzahl }})</li>
+                <li>Alle Gewalttaten ({{ fall.gewalttaten.count }})</li>
+                <li>Alle Verknüpfungen zu Gewaltarten und Folgen</li>
+            </ul>
+            <p style="color: #721c24;">
+                <strong>Diese Aktion kann NICHT rückgängig gemacht werden!</strong>
+            </p>
+            <button type="submit" name="delete_type" value="hard" class="btn btn-danger">
+                Permanent löschen
+            </button>
+        </div>
+    {% endif %}
+    
+    {% if not can_soft_delete and not can_hard_delete %}
+        <div style="background-color: #f8d7da; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #721c24;">
+                <strong>Keine Berechtigung:</strong> Sie haben keine Berechtigung, Fälle zu löschen.
+            </p>
+        </div>
+    {% endif %}
+    
+    <div class="form-actions" style="margin-top: 20px;">
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+
+{% if can_hard_delete %}
+    <div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8; margin-top: 20px;">
+        <p style="margin: 0;">
+            <strong>ℹ️ Hinweis zur Berechtigung:</strong> 
+            Permanentes Löschen ist nur für Benutzer mit der Rolle "ADMINISTRATOR" verfügbar.
+            Sie sind angemeldet als: <strong>{{ user.username }}</strong> ({{ user.role.name }})
+        </p>
+    </div>
+{% endif %}
+{% endblock %}

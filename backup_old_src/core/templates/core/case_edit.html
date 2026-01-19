@@ -1,0 +1,112 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Fall bearbeiten - B-EV{% endblock %}
+
+{% block content %}
+<h1>Fall bearbeiten: {{ fall.personenbezogene_daten.alias }}</h1>
+
+<p class="text-muted mb-3">
+    Hinweis: In der MVP-Version können nur ausgewählte Felder bearbeitet werden. 
+    Personenbezogene Daten sind nicht editierbar.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="id_zustaendige_beratungsstelle">Zuständige Beratungsstelle</label>
+        <select name="zustaendige_beratungsstelle" id="id_zustaendige_beratungsstelle" class="form-control">
+            <option value="FBS_1_LE" {% if fall.zustaendige_beratungsstelle == 'FBS_1_LE' %}selected{% endif %}>
+                Fachberatungsstelle für queere Betroffene von sexualisierter Gewalt in der Stadt Leipzig
+            </option>
+            <option value="FBS_2_LKNSA" {% if fall.zustaendige_beratungsstelle == 'FBS_2_LKNSA' %}selected{% endif %}>
+                Fachberatung gegen sexualisierte Gewalt im Landkreis Nordsachsen
+            </option>
+            <option value="FBS_3_LKLE" {% if fall.zustaendige_beratungsstelle == 'FBS_3_LKLE' %}selected{% endif %}>
+                Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
+            </option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="id_informationsquelle">Wie hat die Person von der Beratungsstelle erfahren?</label>
+        <select name="informationsquelle" id="id_informationsquelle" class="form-control">
+            <option value="">---------</option>
+            <option value="POLIZEI" {% if fall.informationsquelle == 'POLIZEI' %}selected{% endif %}>
+                Selbstmeldungen über Polizei
+            </option>
+            <option value="KONTAKTE" {% if fall.informationsquelle == 'KONTAKTE' %}selected{% endif %}>
+                Private Kontakte
+            </option>
+            <option value="BERATUNGSSTELLEN" {% if fall.informationsquelle == 'BERATUNGSSTELLEN' %}selected{% endif %}>
+                Beratungsstellen
+            </option>
+            <option value="INTERNET" {% if fall.informationsquelle == 'INTERNET' %}selected{% endif %}>
+                Internet
+            </option>
+            <option value="AEMTER" {% if fall.informationsquelle == 'AEMTER' %}selected{% endif %}>
+                Ämter
+            </option>
+            <option value="GESUNDHEITSWESEN" {% if fall.informationsquelle == 'GESUNDHEITSWESEN' %}selected{% endif %}>
+                Gesundheitswesen (Arzt/Ärztin)
+            </option>
+            <option value="RECHTSANWAELTE" {% if fall.informationsquelle == 'RECHTSANWAELTE' %}selected{% endif %}>
+                Rechtsanwälte/Rechtsanwältinnen
+            </option>
+            <option value="ANDERE" {% if fall.informationsquelle == 'ANDERE' %}selected{% endif %}>
+                andere Quelle
+            </option>
+            <option value="KEINE_ANGABE" {% if fall.informationsquelle == 'KEINE_ANGABE' %}selected{% endif %}>
+                keine Angabe
+            </option>
+        </select>
+    </div>
+    
+    <div class="form-group" id="informationsquelle_andere_wrapper">
+        <label for="id_informationsquelle_andere_details">Details zur anderen Quelle</label>
+        <textarea name="informationsquelle_andere_details" id="id_informationsquelle_andere_details" rows="2">{{ fall.informationsquelle_andere_details }}</textarea>
+    </div>
+    
+    <hr style="margin: 20px 0;">
+    
+    <div class="form-group">
+        <label for="id_anzahl_dolmetschungen_stunden">Anzahl der Dolmetschungs-Stunden</label>
+        <input type="number" name="anzahl_dolmetschungen_stunden" id="id_anzahl_dolmetschungen_stunden" 
+               value="{{ fall.anzahl_dolmetschungen_stunden }}" step="0.5" min="0" class="form-control">
+    </div>
+    
+    <div class="form-group">
+        <label for="id_dolmetschung_sprachen">Dolmetschungs-Sprachen</label>
+        <textarea name="dolmetschung_sprachen" id="id_dolmetschung_sprachen" rows="2">{{ fall.dolmetschung_sprachen }}</textarea>
+    </div>
+    
+    <hr style="margin: 20px 0;">
+    
+    <div class="form-group">
+        <label for="id_weitere_notizen">Weitere Notizen</label>
+        <textarea name="weitere_notizen" id="id_weitere_notizen" rows="5">{{ fall.weitere_notizen }}</textarea>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">Speichern</button>
+        <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// conditional: zeige andere quelle details nur wenn ANDERE gewählt
+document.addEventListener('DOMContentLoaded', function() {
+    var dropdown = document.getElementById('id_informationsquelle');
+    var wrapper = document.getElementById('informationsquelle_andere_wrapper');
+    
+    function toggleAndereDetails() {
+        wrapper.style.display = dropdown.value === 'ANDERE' ? '' : 'none';
+    }
+    
+    dropdown.addEventListener('change', toggleAndereDetails);
+    toggleAndereDetails(); // initial state
+});
+</script>
+{% endblock %}
