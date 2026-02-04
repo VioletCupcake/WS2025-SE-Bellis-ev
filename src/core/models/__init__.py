@@ -3,7 +3,7 @@ Core models package.
 Imports all models for Django to discover.
 """
 from .user_models import User, Role, PermissionSet, Session
-from .fall_models import Fall, PersonenbezogeneDaten, Beratung, Gewalttat
+from .fall_models import Fall, PersonenbezogeneDaten, Beratung, Gewalttat, Anfrage
 from .reference_models import (
     GewalttatArt,
     FolgenDerGewalt,
@@ -13,7 +13,7 @@ from .reference_models import (
 
 __all__ = [
     'User', 'Role', 'PermissionSet', 'Session',
-    'Fall', 'PersonenbezogeneDaten', 'Beratung', 'Gewalttat',
+    'Fall', 'PersonenbezogeneDaten', 'Beratung', 'Gewalttat', 'Anfrage',
     'GewalttatArt', 'FolgenDerGewalt',
     'Gewalttat_GewalttatArt', 'Fall_FolgenDerGewalt'
 ]

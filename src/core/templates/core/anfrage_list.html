@@ -1,0 +1,128 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Anfragen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Anfragen</h1>
+
+<div class="page-actions">
+    <a href="{% url 'core:anfrage_create' %}" class="btn btn-success">
+        + Neue Anfrage
+    </a>
+</div>
+
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="Suche nach Art oder Herkunft..." value="{{ search_query }}">
+    <button type="submit" class="btn btn-primary">Suchen</button>
+    {% if search_query %}
+    <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Zurücksetzen</a>
+    {% endif %}
+</form>
+
+{% if anfragen %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Datum</th>
+            <th>Kontaktweg</th>
+            <th>Anfrage aus</th>
+            <th>Wer hat angefragt</th>
+            <th>Art der Anfrage</th>
+            <th>Termin vergeben</th>
+            <th>Erstellt von</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for anfrage in anfragen %}
+        <tr>
+            <td>{{ anfrage.datum_anfrage|date:"d.m.Y" }}</td>
+            <td>{{ anfrage.get_wie_display }}</td>
+            <td>{{ anfrage.get_anfrage_aus_display }}</td>
+            <td>{{ anfrage.get_wer_hat_angefragt_display }}</td>
+            <td>{{ anfrage.get_art_der_anfrage_display }}</td>
+            <td>
+                {% if anfrage.termin_vergeben %}
+                <span class="badge badge-success">Ja</span>
+                <br><small>{{ anfrage.termin_datum|date:"d.m.Y" }} - {{ anfrage.get_termin_ort_display }}</small>
+                {% else %}
+                <span class="badge badge-secondary">Nein</span>
+                {% endif %}
+            </td>
+            <td>{{ anfrage.bearbeitet_von.username|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="no-data">Keine Anfragen gefunden.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-actions {
+        margin-bottom: 20px;
+    }
+
+    .search-form {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-form input[type="text"] {
+        flex: 1;
+        max-width: 400px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .data-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f5f5f5;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .badge-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #6c757d;
+        padding: 40px;
+        font-style: italic;
+    }
+</style>
+{% endblock %}

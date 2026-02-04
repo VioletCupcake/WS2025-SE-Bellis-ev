@@ -8,12 +8,14 @@ from .fall_forms import FallCreateForm
 from .beratung_forms import BeratungForm
 from .gewalttat_forms import GewalttatForm, TAETER_GESCHLECHT_CHOICES, TAETER_VERHAELTNIS_CHOICES
 from .folgen_forms import FolgenDerGewaltForm
+from .anfrage_forms import AnfrageCreateForm
 
 __all__ = [
     'FallCreateForm',
     'BeratungForm',
     'GewalttatForm',
     'FolgenDerGewaltForm',
+    'AnfrageCreateForm',
     'TAETER_GESCHLECHT_CHOICES',
     'TAETER_VERHAELTNIS_CHOICES',
 ]

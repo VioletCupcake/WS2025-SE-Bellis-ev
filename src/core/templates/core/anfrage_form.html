@@ -1,0 +1,246 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ action }} Anfrage - B-EV{% endblock %}
+
+{% block content %}
+<h1>{{ action }} Anfrage</h1>
+
+{% if show_warning %}
+<!-- Warning Modal for incomplete fields -->
+<div class="warning-modal" id="incompleteWarning" style="display: block;">
+    <div class="warning-modal-content">
+        <h3>⚠️ Unvollständige Eingabe</h3>
+        <p>Folgende Felder sind nicht ausgefüllt:</p>
+        <ul>
+            {% for field in incomplete_fields %}
+                <li>{{ field }}</li>
+            {% endfor %}
+        </ul>
+        <p>Möchten Sie die Felder anpassen oder trotzdem speichern?</p>
+        <div class="warning-modal-actions">
+            <button type="button" class="btn btn-primary" onclick="closeWarning()">
+                Felder anpassen
+            </button>
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="wie" value="{{ form.wie.value }}">
+                <input type="hidden" name="datum_anfrage" value="{{ form.datum_anfrage.value }}">
+                <input type="hidden" name="anfrage_aus" value="{{ form.anfrage_aus.value }}">
+                <input type="hidden" name="wer_hat_angefragt" value="{{ form.wer_hat_angefragt.value }}">
+                <input type="hidden" name="art_der_anfrage" value="{{ form.art_der_anfrage.value }}">
+                <input type="hidden" name="termin_vergeben" value="{% if form.termin_vergeben.value %}on{% endif %}">
+                <input type="hidden" name="termin_datum" value="{{ form.termin_datum.value|default:'' }}">
+                <input type="hidden" name="termin_ort" value="{{ form.termin_ort.value|default:'' }}">
+                <input type="hidden" name="force_save" value="true">
+                <button type="submit" class="btn btn-warning">
+                    Trotzdem speichern
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    
+    <h2>Anfrageinformationen</h2>
+    
+    <div class="form-group">
+        <label for="{{ form.wie.id_for_label }}">
+            Wie (Kontaktweg) *
+        </label>
+        {{ form.wie }}
+        {% if form.wie.errors %}
+            <ul class="errorlist">
+                {% for error in form.wie.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.datum_anfrage.id_for_label }}">Datum der Anfrage *</label>
+        {{ form.datum_anfrage }}
+        {% if form.datum_anfrage.errors %}
+            <ul class="errorlist">
+                {% for error in form.datum_anfrage.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.anfrage_aus.id_for_label }}">Anfrage aus *</label>
+        {{ form.anfrage_aus }}
+        {% if form.anfrage_aus.errors %}
+            <ul class="errorlist">
+                {% for error in form.anfrage_aus.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.wer_hat_angefragt.id_for_label }}">
+            Wer hat angefragt *
+        </label>
+        {{ form.wer_hat_angefragt }}
+        {% if form.wer_hat_angefragt.errors %}
+            <ul class="errorlist">
+                {% for error in form.wer_hat_angefragt.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label for="{{ form.art_der_anfrage.id_for_label }}">Art der Anfrage *</label>
+        {{ form.art_der_anfrage }}
+        {% if form.art_der_anfrage.errors %}
+            <ul class="errorlist">
+                {% for error in form.art_der_anfrage.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>Terminvergabe</h2>
+    
+    <div class="form-group">
+        <label>
+            {{ form.termin_vergeben }}
+            Termin vergeben
+        </label>
+    </div>
+    
+    <div class="form-group" id="termin_datum_wrapper">
+        <label for="{{ form.termin_datum.id_for_label }}">Datum des Termins</label>
+        {{ form.termin_datum }}
+        {% if form.termin_datum.errors %}
+            <ul class="errorlist">
+                {% for error in form.termin_datum.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group" id="termin_ort_wrapper">
+        <label for="{{ form.termin_ort.id_for_label }}">Ort des Termins</label>
+        {{ form.termin_ort }}
+        {% if form.termin_ort.errors %}
+            <ul class="errorlist">
+                {% for error in form.termin_ort.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Conditional field visibility
+document.addEventListener('DOMContentLoaded', function() {
+    // Helper to show/hide wrapper divs
+    function toggleField(wrapperId, show) {
+        var el = document.getElementById(wrapperId);
+        if (el) el.style.display = show ? '' : 'none';
+    }
+    
+    // termin_vergeben checkbox -> termin_datum + termin_ort
+    var terminCheck = document.getElementById('id_termin_vergeben');
+    function updateTermin() {
+        var show = terminCheck && terminCheck.checked;
+        toggleField('termin_datum_wrapper', show);
+        toggleField('termin_ort_wrapper', show);
+    }
+    if (terminCheck) {
+        terminCheck.addEventListener('change', updateTermin);
+        updateTermin();
+    }
+});
+
+// Close warning modal and return to form editing
+function closeWarning() {
+    var modal = document.getElementById('incompleteWarning');
+    if (modal) modal.style.display = 'none';
+}
+</script>
+
+<style>
+/* Warning Modal Styling */
+.warning-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.warning-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.warning-modal-content h3 {
+    margin-top: 0;
+    color: #856404;
+}
+
+.warning-modal-content ul {
+    background: #fff3cd;
+    padding: 15px 15px 15px 35px;
+    border-radius: 4px;
+    border: 1px solid #ffc107;
+}
+
+.warning-modal-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+</style>
+{% endblock %}

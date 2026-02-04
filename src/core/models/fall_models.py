@@ -751,3 +751,164 @@ class Gewalttat(models.Model):
         
         if errors:
             raise ValidationError(errors)
+
+
+class Anfrage(models.Model):
+    """
+    One-time inquiry record (distinct from Fall/Case).
+    Anfragen are single data entries that do not require follow-up editing.
+    Used to track initial contacts that may or may not become full cases.
+    """
+    
+    # Contact method choices
+    WIE_CHOICES = [
+        ('EMAIL', 'E-Mail'),
+        ('TELEFON', 'Telefon'),
+        ('ANDERE', 'andere'),
+    ]
+    
+    # Origin/Location choices
+    ANFRAGE_AUS_CHOICES = [
+        ('LEIPZIG_STADT', 'Leipzig Stadt'),
+        ('LEIPZIG_LAND', 'Leipzig Land'),
+        ('NORDSACHSEN', 'Nordsachsen'),
+        ('SACHSEN', 'Sachsen'),
+        ('ANDERE', 'andere'),
+    ]
+    
+    # Requester type choices
+    WER_HAT_ANGEFRAGT_CHOICES = [
+        ('F', 'Fachkraft'),
+        ('A', 'Angehörige:r'),
+        ('B', 'Betroffene:r'),
+        ('ANONYM', 'anonym'),
+        ('QB', 'queer Betroffene:r'),
+        ('QF', 'queer Fachkraft'),
+        ('QA', 'queer Angehörige:r'),
+        ('Q_ANONYM', 'queer anonym'),
+        ('FFB', 'Fachkraft für Betroffene'),
+        ('AFB', 'Angehörige:r für Betroffene'),
+        ('FFQB', 'Fachkraft für queere Betroffene'),
+        ('AFQB', 'Angehörige für queere Betroffene'),
+    ]
+    
+    # Inquiry type choices
+    ART_DER_ANFRAGE_CHOICES = [
+        ('MEDIZINISCHE_SOFORTHILFE', 'Medizinische Soforthilfe'),
+        ('VERTRAULICHE_SPURENSICHERUNG', 'Vertrauliche Spurensicherung'),
+        ('BERATUNGSBEDARF', 'Beratungsbedarf'),
+        ('ZU_RECHTLICHEN', 'zu Rechtlichen'),
+        ('SONSTIGES', 'Sonstiges'),
+    ]
+    
+    # Appointment location choices
+    TERMIN_ORT_CHOICES = [
+        ('LEIPZIG_STADT', 'Leipzig Stadt'),
+        ('LEIPZIG_NORD', 'Leipzig Nord'),
+        ('NORDSACHSEN', 'Nordsachsen'),
+    ]
+    
+    # Primary key
+    anfrage_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Contact method
+    wie = models.CharField(
+        max_length=20,
+        choices=WIE_CHOICES,
+        verbose_name="Kontaktweg"
+    )
+    
+    # Date of inquiry
+    datum_anfrage = models.DateField(
+        verbose_name="Datum der Anfrage"
+    )
+    
+    # Origin
+    anfrage_aus = models.CharField(
+        max_length=20,
+        choices=ANFRAGE_AUS_CHOICES,
+        verbose_name="Anfrage aus"
+    )
+    
+    # Who made the inquiry
+    wer_hat_angefragt = models.CharField(
+        max_length=20,
+        choices=WER_HAT_ANGEFRAGT_CHOICES,
+        verbose_name="Wer hat angefragt"
+    )
+    
+    # Type of inquiry
+    art_der_anfrage = models.CharField(
+        max_length=40,
+        choices=ART_DER_ANFRAGE_CHOICES,
+        verbose_name="Art der Anfrage"
+    )
+    
+    # Appointment scheduled
+    termin_vergeben = models.BooleanField(
+        default=False,
+        verbose_name="Termin vergeben"
+    )
+    
+    # Appointment date (only if termin_vergeben=True)
+    termin_datum = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Datum des Termins"
+    )
+    
+    # Appointment location (only if termin_vergeben=True)
+    termin_ort = models.CharField(
+        max_length=20,
+        choices=TERMIN_ORT_CHOICES,
+        blank=True,
+        verbose_name="Ort des Termins"
+    )
+    
+    # Timestamps
+    erstellungsdatum = models.DateTimeField(auto_now_add=True)
+    
+    # User who created the record
+    bearbeitet_von = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='erstellte_anfragen'
+    )
+    
+    class Meta:
+        db_table = 'anfrage'
+        ordering = ['-datum_anfrage']
+        verbose_name = 'Anfrage'
+        verbose_name_plural = 'Anfragen'
+        indexes = [
+            models.Index(fields=['datum_anfrage']),
+            models.Index(fields=['anfrage_aus']),
+        ]
+    
+    def __str__(self):
+        return f"Anfrage {self.datum_anfrage} - {self.get_wer_hat_angefragt_display()}"
+    
+    def clean(self):
+        """Cross-field validation for Anfrage model."""
+        super().clean()
+        errors = {}
+        
+        # If termin_vergeben=True, termin_datum and termin_ort should be filled
+        # Note: This is a soft validation - the form will warn but allow saving
+        if self.termin_vergeben:
+            if not self.termin_datum:
+                errors['termin_datum'] = ['Termin-Datum empfohlen wenn Termin vergeben']
+            if not self.termin_ort:
+                errors['termin_ort'] = ['Termin-Ort empfohlen wenn Termin vergeben']
+        
+        # If termin_vergeben=False, termin_datum and termin_ort should be empty
+        if not self.termin_vergeben:
+            if self.termin_datum:
+                errors['termin_datum'] = ['Nur gültig wenn Termin vergeben']
+            if self.termin_ort:
+                errors['termin_ort'] = ['Nur gültig wenn Termin vergeben']
+        
+        if errors:
+            raise ValidationError(errors)

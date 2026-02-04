@@ -7,7 +7,7 @@ Uses Django's built-in auth views for login/logout.
 
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from core.views import fall_views, beratung_views, gewalttat_views, folgen_views
+from core.views import fall_views, beratung_views, gewalttat_views, folgen_views, anfrage_views
 
 app_name = 'core'
 
@@ -47,4 +47,8 @@ urlpatterns = [
     path('cases/<uuid:fall_id>/folgen/add/', folgen_views.folgen_add, name='folgen_add'),
     path('folgen/<int:folgen_id>/edit/', folgen_views.folgen_edit, name='folgen_edit'),
     path('folgen/<int:folgen_id>/delete/', folgen_views.folgen_delete, name='folgen_delete'),
+    
+    # ===== ANFRAGE (INQUIRIES) =====
+    path('anfragen/', anfrage_views.anfrage_list, name='anfrage_list'),
+    path('anfragen/create/', anfrage_views.anfrage_create, name='anfrage_create'),
 ]
