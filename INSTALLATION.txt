@@ -27,6 +27,9 @@ INSTALLATION (3 STEPS):
 
    http://localhost:8002/login/ for the main app
    http://localhost:8002/admin/ for the admin panel
+   http://localhost:8002/anfragen/ for the anfragen page
+
+
 
 
 4. Login with the account you want to test
