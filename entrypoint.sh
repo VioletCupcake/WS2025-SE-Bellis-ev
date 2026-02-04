@@ -76,10 +76,11 @@ echo "    Migrations applied successfully"
 
 # Load seed data only if no users exist (first run)
 echo "[4/5] Checking seed data..."
-USER_COUNT=$(python manage.py shell -c "from core.models import User; print(User.objects.count())" 2>/dev/null || echo "ERROR")
+USER_COUNT=$(python manage.py shell -c "from core.models import User; print(User.objects.count())" 2>/dev/null | tail -1 | tr -d '[:space:]' || echo "0")
 
-if [ "$USER_COUNT" = "ERROR" ]; then
-    echo "!!! WARNING: Could not query user count, attempting seed anyway..."
+# Validate that USER_COUNT is a number
+if ! [[ "$USER_COUNT" =~ ^[0-9]+$ ]]; then
+    echo "    Could not determine user count, assuming 0..."
     USER_COUNT=0
 fi
 
