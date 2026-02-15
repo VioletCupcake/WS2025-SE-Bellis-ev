@@ -12,9 +12,10 @@
 </div>
 
 <form method="get" class="search-form">
+    <input type="date" name="datum" value="{{ datum_filter }}" title="Nach Datum filtern">
     <input type="text" name="search" placeholder="Suche nach Art oder Herkunft..." value="{{ search_query }}">
     <button type="submit" class="btn btn-primary">Suchen</button>
-    {% if search_query %}
+    {% if search_query or datum_filter %}
     <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Zurücksetzen</a>
     {% endif %}
 </form>
@@ -30,6 +31,7 @@
             <th>Art der Anfrage</th>
             <th>Termin vergeben</th>
             <th>Erstellt von</th>
+            <th>Aktionen</th>
         </tr>
     </thead>
     <tbody>
@@ -49,6 +51,12 @@
                 {% endif %}
             </td>
             <td>{{ anfrage.bearbeitet_von.username|default:"-" }}</td>
+            <td class="actions-cell">
+                <a href="{% url 'core:anfrage_edit' anfrage.anfrage_id %}" class="btn btn-sm btn-primary"
+                    title="Bearbeiten">✏️</a>
+                <a href="{% url 'core:anfrage_delete' anfrage.anfrage_id %}" class="btn btn-sm btn-danger"
+                    title="Löschen">🗑️</a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -68,11 +76,19 @@
         margin-bottom: 20px;
         display: flex;
         gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     .search-form input[type="text"] {
         flex: 1;
         max-width: 400px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .search-form input[type="date"] {
         padding: 8px 12px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -123,6 +139,30 @@
         color: #6c757d;
         padding: 40px;
         font-style: italic;
+    }
+
+    .actions-cell {
+        white-space: nowrap;
+    }
+
+    .actions-cell .btn {
+        margin-right: 4px;
+    }
+
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 13px;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
     }
 </style>
 {% endblock %}

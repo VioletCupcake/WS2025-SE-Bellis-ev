@@ -51,4 +51,6 @@ urlpatterns = [
     # ===== ANFRAGE (INQUIRIES) =====
     path('anfragen/', anfrage_views.anfrage_list, name='anfrage_list'),
     path('anfragen/create/', anfrage_views.anfrage_create, name='anfrage_create'),
+    path('anfragen/<uuid:anfrage_id>/edit/', anfrage_views.anfrage_edit, name='anfrage_edit'),
+    path('anfragen/<uuid:anfrage_id>/delete/', anfrage_views.anfrage_delete, name='anfrage_delete'),
 ]

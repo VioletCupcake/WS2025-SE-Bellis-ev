@@ -30,8 +30,6 @@ INSTALLATION (3 STEPS):
    http://localhost:8002/anfragen/ for the anfragen page
 
 
-
-
 4. Login with the account you want to test
 
 For the main app MVP, the login data are visible on the login page.

@@ -1,0 +1,67 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Anfrage löschen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Anfrage löschen</h1>
+
+<div
+    style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">⚠️ Bestätigung erforderlich</h2>
+    <p style="margin-bottom: 0; color: #721c24;">
+        Möchten Sie diese Anfrage wirklich löschen?
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0;">Anfrageinformationen</h3>
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 40%;">Datum</th>
+            <td>{{ anfrage.datum_anfrage|date:"d.m.Y" }}</td>
+        </tr>
+        <tr>
+            <th>Kontaktweg</th>
+            <td>{{ anfrage.get_wie_display }}</td>
+        </tr>
+        <tr>
+            <th>Anfrage aus</th>
+            <td>{{ anfrage.get_anfrage_aus_display }}</td>
+        </tr>
+        <tr>
+            <th>Wer hat angefragt</th>
+            <td>{{ anfrage.get_wer_hat_angefragt_display }}</td>
+        </tr>
+        <tr>
+            <th>Art der Anfrage</th>
+            <td>{{ anfrage.get_art_der_anfrage_display }}</td>
+        </tr>
+        {% if anfrage.termin_vergeben %}
+        <tr>
+            <th>Termin</th>
+            <td>{{ anfrage.termin_datum|date:"d.m.Y" }} - {{ anfrage.get_termin_ort_display }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <th>Erstellt von</th>
+            <td>{{ anfrage.bearbeitet_von.username|default:"-" }}</td>
+        </tr>
+    </table>
+</div>
+
+<div
+    style="background-color: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+    <p style="margin: 0;">
+        <strong>ℹ️ Hinweis:</strong> Diese Aktion kann nicht rückgängig gemacht werden.
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Anfrage löschen</button>
+        <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

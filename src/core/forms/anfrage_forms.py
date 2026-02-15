@@ -121,3 +121,41 @@ class AnfrageCreateForm(forms.Form):
             'termin_datum': self.cleaned_data.get('termin_datum'),
             'termin_ort': self.cleaned_data.get('termin_ort', ''),
         }
+
+
+class AnfrageEditForm(AnfrageCreateForm):
+    """
+    Form for editing an existing Anfrage.
+    
+    Extends AnfrageCreateForm with instance loading and saving.
+    """
+    
+    def __init__(self, *args, instance=None, **kwargs):
+        self.instance = instance
+        
+        # Pre-populate initial values from instance
+        if instance and not args:
+            initial = kwargs.get('initial', {})
+            initial.update({
+                'wie': instance.wie,
+                'datum_anfrage': instance.datum_anfrage,
+                'anfrage_aus': instance.anfrage_aus,
+                'wer_hat_angefragt': instance.wer_hat_angefragt,
+                'art_der_anfrage': instance.art_der_anfrage,
+                'termin_vergeben': instance.termin_vergeben,
+                'termin_datum': instance.termin_datum,
+                'termin_ort': instance.termin_ort,
+            })
+            kwargs['initial'] = initial
+        
+        super().__init__(*args, **kwargs)
+    
+    def save(self, user=None):
+        """Update the existing Anfrage instance with form data."""
+        data = self.get_anfrage_data()
+        for field, value in data.items():
+            setattr(self.instance, field, value)
+        if user:
+            self.instance.bearbeitet_von = user
+        self.instance.save()
+        return self.instance
