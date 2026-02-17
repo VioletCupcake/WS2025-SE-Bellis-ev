@@ -431,8 +431,8 @@
                 {% if q.field_type == 'boolean' %}
                 <select id="question_{{ q.question_id }}" name="question_{{ q.question_id }}">
                     <option value="">– Bitte wählen –</option>
-                    <option value="true" {% if q.current_answer=='true' %}selected{% endif %}>Ja</option>
-                    <option value="false" {% if q.current_answer=='false' %}selected{% endif %}>Nein</option>
+                    <option value="true" {% if q.current_answer== 'true' %}selected{% endif %}>Ja</option>
+                    <option value="false" {% if q.current_answer== 'false' %}selected{% endif %}>Nein</option>
                 </select>
                 {% elif q.field_type == 'date' %}
                 <input type="date" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
