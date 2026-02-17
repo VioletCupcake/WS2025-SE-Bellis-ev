@@ -416,44 +416,27 @@
     </div>
 
     {% if survey_questions %}
-    <form method="post" action="{% url 'core:survey_answers_save' fall.fall_id %}">
-        {% csrf_token %}
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px;">
-            {% for q in survey_questions %}
-            <div class="form-group">
-                <label for="question_{{ q.question_id }}">
-                    {{ q.label }}
-                    {% if q.required %}<span style="color: #dc3545;">*</span>{% endif %}
-                    <small style="color: #6c757d; font-weight: normal;">({{ q.get_field_type_display }})</small>
-                </label>
-                {% if q.field_type == 'boolean' %}
-                <select id="question_{{ q.question_id }}" name="question_{{ q.question_id }}">
-                    <option value="">– Bitte wählen –</option>
-                    <option value="true" {% if q.current_answer == 'true' %}selected{% endif %}>Ja</option>
-                    <option value="false" {% if q.current_answer == 'false' %}selected{% endif %}>Nein</option>
-                </select>
-                {% elif q.field_type == 'date' %}
-                <input type="date" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
-                    value="{{ q.current_answer|default:'' }}">
-                {% elif q.field_type == 'integer' %}
-                <input type="number" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
-                    value="{{ q.current_answer|default:'' }}" step="1">
-                {% elif q.field_type == 'double' %}
-                <input type="number" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
-                    value="{{ q.current_answer|default:'' }}" step="0.01">
+    <table style="margin-top: 0;">
+        {% for q in survey_questions %}
+        <tr>
+            <th style="width: 40%;">
+                {{ q.label }}
+                <small style="color: #6c757d; font-weight: normal;">({{ q.get_field_type_display }})</small>
+            </th>
+            <td>
+                {% if q.current_answer %}
+                    {% if q.field_type == 'boolean' %}
+                        {% if q.current_answer == 'true' %}Ja{% else %}Nein{% endif %}
+                    {% else %}
+                        {{ q.current_answer }}
+                    {% endif %}
                 {% else %}
-                <input type="text" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
-                    value="{{ q.current_answer|default:'' }}">
+                    <span class="text-muted">-</span>
                 {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-        {% if user.role.permissions.can_edit_cases %}
-        <div class="form-actions">
-            <button type="submit" class="btn btn-success">Erhebungsbogen speichern</button>
-        </div>
-        {% endif %}
-    </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
     {% else %}
     <p class="text-muted">
         Noch keine Fragen definiert.

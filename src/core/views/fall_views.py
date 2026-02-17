@@ -69,6 +69,18 @@ def case_create(request):
                 # Atomic creation via FallManager
                 fall = FallManager.createFall(fall_data, personen_data)
                 
+                # Save survey answers
+                survey_questions = CaseSurveyQuestion.objects.all()
+                for question in survey_questions:
+                    field_name = f'question_{question.question_id}'
+                    value = request.POST.get(field_name, '').strip()
+                    if value:
+                        CaseSurveyAnswer.objects.create(
+                            case=fall,
+                            question=question,
+                            value=value
+                        )
+                
                 messages.success(
                     request,
                     f'Fall "{fall.personenbezogene_daten.alias}" erfolgreich erstellt.' # type: ignore
@@ -82,9 +94,13 @@ def case_create(request):
     else:
         form = FallCreateForm()
     
+    # Load survey questions for the form
+    survey_questions = CaseSurveyQuestion.objects.all()
+    
     context = {
         'form': form,
         'action': 'Erstellen',
+        'survey_questions': survey_questions,
     }
     return render(request, 'core/case_form.html', context)
 
@@ -153,11 +169,35 @@ def case_edit(request, fall_id):
             'bearbeitet_von', 'letzte_bearbeitung'
         ])
         
+        # Save survey answers
+        survey_questions = CaseSurveyQuestion.objects.all()
+        for question in survey_questions:
+            field_name = f'question_{question.question_id}'
+            value = request.POST.get(field_name, '').strip()
+            if value:
+                CaseSurveyAnswer.objects.update_or_create(
+                    case=fall,
+                    question=question,
+                    defaults={'value': value}
+                )
+            else:
+                CaseSurveyAnswer.objects.filter(
+                    case=fall,
+                    question=question
+                ).delete()
+        
         messages.success(request, f'Fall "{fall}" aktualisiert.')
         return redirect('core:case_detail', fall_id=fall.fall_id)
     
+    # Load survey questions with current answers
+    survey_questions = CaseSurveyQuestion.objects.all()
+    answers = {a.question_id: a.value for a in CaseSurveyAnswer.objects.filter(case=fall)}
+    for q in survey_questions:
+        q.current_answer = answers.get(q.question_id, '')
+    
     context = {
         'fall': fall,
+        'survey_questions': survey_questions,
     }
     return render(request, 'core/case_edit.html', context)
 

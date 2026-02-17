@@ -6,13 +6,13 @@
 <h1>Fall bearbeiten: {{ fall.personenbezogene_daten.alias }}</h1>
 
 <p class="text-muted mb-3">
-    Hinweis: In der MVP-Version können nur ausgewählte Felder bearbeitet werden. 
+    Hinweis: In der MVP-Version können nur ausgewählte Felder bearbeitet werden.
     Personenbezogene Daten sind nicht editierbar.
 </p>
 
 <form method="post">
     {% csrf_token %}
-    
+
     <div class="form-group">
         <label for="id_zustaendige_beratungsstelle">Zuständige Beratungsstelle</label>
         <select name="zustaendige_beratungsstelle" id="id_zustaendige_beratungsstelle" class="form-control">
@@ -27,7 +27,7 @@
             </option>
         </select>
     </div>
-    
+
     <div class="form-group">
         <label for="id_informationsquelle">Wie hat die Person von der Beratungsstelle erfahren?</label>
         <select name="informationsquelle" id="id_informationsquelle" class="form-control">
@@ -61,32 +61,68 @@
             </option>
         </select>
     </div>
-    
+
     <div class="form-group" id="informationsquelle_andere_wrapper">
         <label for="id_informationsquelle_andere_details">Details zur anderen Quelle</label>
-        <textarea name="informationsquelle_andere_details" id="id_informationsquelle_andere_details" rows="2">{{ fall.informationsquelle_andere_details }}</textarea>
+        <textarea name="informationsquelle_andere_details" id="id_informationsquelle_andere_details"
+            rows="2">{{ fall.informationsquelle_andere_details }}</textarea>
     </div>
-    
+
     <hr style="margin: 20px 0;">
-    
+
     <div class="form-group">
         <label for="id_anzahl_dolmetschungen_stunden">Anzahl der Dolmetschungs-Stunden</label>
-        <input type="number" name="anzahl_dolmetschungen_stunden" id="id_anzahl_dolmetschungen_stunden" 
-               value="{{ fall.anzahl_dolmetschungen_stunden }}" step="0.5" min="0" class="form-control">
+        <input type="number" name="anzahl_dolmetschungen_stunden" id="id_anzahl_dolmetschungen_stunden"
+            value="{{ fall.anzahl_dolmetschungen_stunden }}" step="0.5" min="0" class="form-control">
     </div>
-    
+
     <div class="form-group">
         <label for="id_dolmetschung_sprachen">Dolmetschungs-Sprachen</label>
-        <textarea name="dolmetschung_sprachen" id="id_dolmetschung_sprachen" rows="2">{{ fall.dolmetschung_sprachen }}</textarea>
+        <textarea name="dolmetschung_sprachen" id="id_dolmetschung_sprachen"
+            rows="2">{{ fall.dolmetschung_sprachen }}</textarea>
     </div>
-    
+
     <hr style="margin: 20px 0;">
-    
+
     <div class="form-group">
         <label for="id_weitere_notizen">Weitere Notizen</label>
         <textarea name="weitere_notizen" id="id_weitere_notizen" rows="5">{{ fall.weitere_notizen }}</textarea>
     </div>
-    
+    {% if survey_questions %}
+    <hr style="margin: 20px 0;">
+    <h2>Erhebungsbogen</h2>
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px;">
+        {% for q in survey_questions %}
+        <div class="form-group">
+            <label for="question_{{ q.question_id }}">
+                {{ q.label }}
+                {% if q.required %}<span style="color: #dc3545;">*</span>{% endif %}
+                <small style="color: #6c757d; font-weight: normal;">({{ q.get_field_type_display }})</small>
+            </label>
+            {% if q.field_type == 'boolean' %}
+            <select id="question_{{ q.question_id }}" name="question_{{ q.question_id }}">
+                <option value="">– Bitte wählen –</option>
+                <option value="true" {% if q.current_answer == 'true' %}selected{% endif %}>Ja</option>
+                <option value="false" {% if q.current_answer == 'false' %}selected{% endif %}>Nein</option>
+            </select>
+            {% elif q.field_type == 'date' %}
+            <input type="date" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
+                value="{{ q.current_answer|default:'' }}">
+            {% elif q.field_type == 'integer' %}
+            <input type="number" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
+                value="{{ q.current_answer|default:'' }}" step="1">
+            {% elif q.field_type == 'double' %}
+            <input type="number" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
+                value="{{ q.current_answer|default:'' }}" step="0.01">
+            {% else %}
+            <input type="text" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"
+                value="{{ q.current_answer|default:'' }}">
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="form-actions">
         <button type="submit" class="btn btn-success">Speichern</button>
         <a href="{% url 'core:case_detail' fall.fall_id %}" class="btn btn-secondary">Abbrechen</a>
@@ -96,17 +132,17 @@
 
 {% block extra_js %}
 <script>
-// conditional: zeige andere quelle details nur wenn ANDERE gewählt
-document.addEventListener('DOMContentLoaded', function() {
-    var dropdown = document.getElementById('id_informationsquelle');
-    var wrapper = document.getElementById('informationsquelle_andere_wrapper');
-    
-    function toggleAndereDetails() {
-        wrapper.style.display = dropdown.value === 'ANDERE' ? '' : 'none';
-    }
-    
-    dropdown.addEventListener('change', toggleAndereDetails);
-    toggleAndereDetails(); // initial state
-});
+    // conditional: zeige andere quelle details nur wenn ANDERE gewählt
+    document.addEventListener('DOMContentLoaded', function () {
+        var dropdown = document.getElementById('id_informationsquelle');
+        var wrapper = document.getElementById('informationsquelle_andere_wrapper');
+
+        function toggleAndereDetails() {
+            wrapper.style.display = dropdown.value === 'ANDERE' ? '' : 'none';
+        }
+
+        dropdown.addEventListener('change', toggleAndereDetails);
+        toggleAndereDetails(); // initial state
+    });
 </script>
 {% endblock %}
