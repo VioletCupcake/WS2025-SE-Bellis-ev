@@ -22,9 +22,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source
 COPY src/ ./src/
 
-# Copy entrypoint script
+# Copy entrypoint script and fix Windows line endings
 COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 # Expose Django development server port
 EXPOSE 8002

@@ -10,10 +10,12 @@ from .reference_models import (
     Gewalttat_GewalttatArt,
     Fall_FolgenDerGewalt
 )
+from .survey_models import CaseSurveyQuestion, CaseSurveyAnswer
 
 __all__ = [
     'User', 'Role', 'PermissionSet', 'Session',
     'Fall', 'PersonenbezogeneDaten', 'Beratung', 'Gewalttat', 'Anfrage',
     'GewalttatArt', 'FolgenDerGewalt',
-    'Gewalttat_GewalttatArt', 'Fall_FolgenDerGewalt'
+    'Gewalttat_GewalttatArt', 'Fall_FolgenDerGewalt',
+    'CaseSurveyQuestion', 'CaseSurveyAnswer',
 ]

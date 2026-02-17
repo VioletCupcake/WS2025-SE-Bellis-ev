@@ -20,5 +20,6 @@ from django.urls import path, include  # ← Add include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),  # ← Add this line
+    path('', include('core.urls')),  # ← Template views
+    path('api/', include('core.api.urls')),  # ← REST API for frontend
 ]

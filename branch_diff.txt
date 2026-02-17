@@ -1,0 +1,1356 @@
+﻿diff --git a/INSTALLATION.txt b/INSTALLATION.txt
+index bd21487..201c7be 100644
+--- a/INSTALLATION.txt
++++ b/INSTALLATION.txt
+@@ -27,7 +27,6 @@ INSTALLATION (3 STEPS):
+ 
+    http://localhost:8002/login/ for the main app
+    http://localhost:8002/admin/ for the admin panel
+-   http://localhost:8002/anfragen/ for the anfragen page
+ 
+ 
+ 4. Login with the account you want to test
+diff --git a/entrypoint.sh b/entrypoint.sh
+index 45844ee..398b5fc 100644
+--- a/entrypoint.sh
++++ b/entrypoint.sh
+@@ -76,11 +76,10 @@ echo "    Migrations applied successfully"
+ 
+ # Load seed data only if no users exist (first run)
+ echo "[4/5] Checking seed data..."
+-USER_COUNT=$(python manage.py shell -c "from core.models import User; print(User.objects.count())" 2>/dev/null | tail -1 | tr -d '[:space:]' || echo "0")
++USER_COUNT=$(python manage.py shell -c "from core.models import User; print(User.objects.count())" 2>/dev/null || echo "ERROR")
+ 
+-# Validate that USER_COUNT is a number
+-if ! [[ "$USER_COUNT" =~ ^[0-9]+$ ]]; then
+-    echo "    Could not determine user count, assuming 0..."
++if [ "$USER_COUNT" = "ERROR" ]; then
++    echo "!!! WARNING: Could not query user count, attempting seed anyway..."
+     USER_COUNT=0
+ fi
+ 
+diff --git a/src/core/forms/__init__.py b/src/core/forms/__init__.py
+index 7d81d7f..3c98f60 100644
+--- a/src/core/forms/__init__.py
++++ b/src/core/forms/__init__.py
+@@ -8,15 +8,12 @@ from .fall_forms import FallCreateForm
+ from .beratung_forms import BeratungForm
+ from .gewalttat_forms import GewalttatForm, TAETER_GESCHLECHT_CHOICES, TAETER_VERHAELTNIS_CHOICES
+ from .folgen_forms import FolgenDerGewaltForm
+-from .anfrage_forms import AnfrageCreateForm, AnfrageEditForm
+ 
+ __all__ = [
+     'FallCreateForm',
+     'BeratungForm',
+     'GewalttatForm',
+     'FolgenDerGewaltForm',
+-    'AnfrageCreateForm',
+-    'AnfrageEditForm',
+     'TAETER_GESCHLECHT_CHOICES',
+     'TAETER_VERHAELTNIS_CHOICES',
+ ]
+diff --git a/src/core/forms/anfrage_forms.py b/src/core/forms/anfrage_forms.py
+deleted file mode 100644
+index b26d8f5..0000000
+--- a/src/core/forms/anfrage_forms.py
++++ /dev/null
+@@ -1,161 +0,0 @@
+-"""
+-Forms for Anfrage (Inquiry) management.
+-
+-Simple Django Form for one-time inquiry creation with soft validation.
+-Unlike Fall, Anfrage does not create a persistent editable record.
+-"""
+-
+-from django import forms
+-from core.models import Anfrage
+-
+-
+-class AnfrageCreateForm(forms.Form):
+-    """
+-    Form for creating a new Anfrage (one-time inquiry).
+-    
+-    Provides soft validation: warns users about incomplete fields
+-    but allows saving with force_save parameter.
+-    """
+-    
+-    # Contact method
+-    wie = forms.ChoiceField(
+-        choices=Anfrage.WIE_CHOICES,
+-        label="Wie (Kontaktweg)",
+-        required=True
+-    )
+-    
+-    # Date of inquiry
+-    datum_anfrage = forms.DateField(
+-        label="Datum der Anfrage",
+-        required=True,
+-        widget=forms.DateInput(attrs={'type': 'date'})
+-    )
+-    
+-    # Origin
+-    anfrage_aus = forms.ChoiceField(
+-        choices=Anfrage.ANFRAGE_AUS_CHOICES,
+-        label="Anfrage aus",
+-        required=True
+-    )
+-    
+-    # Who made the inquiry
+-    wer_hat_angefragt = forms.ChoiceField(
+-        choices=Anfrage.WER_HAT_ANGEFRAGT_CHOICES,
+-        label="Wer hat angefragt",
+-        required=True
+-    )
+-    
+-    # Type of inquiry
+-    art_der_anfrage = forms.ChoiceField(
+-        choices=Anfrage.ART_DER_ANFRAGE_CHOICES,
+-        label="Art der Anfrage",
+-        required=True
+-    )
+-    
+-    # Appointment scheduled
+-    termin_vergeben = forms.BooleanField(
+-        label="Termin vergeben",
+-        required=False
+-    )
+-    
+-    # Appointment date (conditional)
+-    termin_datum = forms.DateField(
+-        label="Datum des Termins",
+-        required=False,
+-        widget=forms.DateInput(attrs={'type': 'date'})
+-    )
+-    
+-    # Appointment location (conditional)
+-    termin_ort = forms.ChoiceField(
+-        choices=[('', '---------')] + list(Anfrage.TERMIN_ORT_CHOICES),
+-        label="Ort des Termins",
+-        required=False
+-    )
+-    
+-    def clean(self):
+-        """
+-        Cross-field validation.
+-        Note: Soft validation - returns warnings, does not block submission.
+-        """
+-        cleaned_data = super().clean()
+-        termin_vergeben = cleaned_data.get('termin_vergeben')
+-        termin_datum = cleaned_data.get('termin_datum')
+-        termin_ort = cleaned_data.get('termin_ort')
+-        
+-        # If termin_vergeben=False but termin fields filled, clear them
+-        if not termin_vergeben:
+-            if termin_datum or termin_ort:
+-                cleaned_data['termin_datum'] = None
+-                cleaned_data['termin_ort'] = ''
+-        
+-        return cleaned_data
+-    
+-    def get_incomplete_fields(self):
+-        """
+-        Returns list of field names that are missing when termin_vergeben=True.
+-        Used to show warning dialog before saving.
+-        """
+-        incomplete = []
+-        
+-        if self.is_valid():
+-            data = self.cleaned_data
+-            
+-            # Check if termin_vergeben but missing termin details
+-            if data.get('termin_vergeben'):
+-                if not data.get('termin_datum'):
+-                    incomplete.append('Datum des Termins')
+-                if not data.get('termin_ort'):
+-                    incomplete.append('Ort des Termins')
+-        
+-        return incomplete
+-    
+-    def get_anfrage_data(self):
+-        """Extract Anfrage-specific fields from cleaned_data."""
+-        return {
+-            'wie': self.cleaned_data['wie'],
+-            'datum_anfrage': self.cleaned_data['datum_anfrage'],
+-            'anfrage_aus': self.cleaned_data['anfrage_aus'],
+-            'wer_hat_angefragt': self.cleaned_data['wer_hat_angefragt'],
+-            'art_der_anfrage': self.cleaned_data['art_der_anfrage'],
+-            'termin_vergeben': self.cleaned_data.get('termin_vergeben', False),
+-            'termin_datum': self.cleaned_data.get('termin_datum'),
+-            'termin_ort': self.cleaned_data.get('termin_ort', ''),
+-        }
+-
+-
+-class AnfrageEditForm(AnfrageCreateForm):
+-    """
+-    Form for editing an existing Anfrage.
+-    
+-    Extends AnfrageCreateForm with instance loading and saving.
+-    """
+-    
+-    def __init__(self, *args, instance=None, **kwargs):
+-        self.instance = instance
+-        
+-        # Pre-populate initial values from instance
+-        if instance and not args:
+-            initial = kwargs.get('initial', {})
+-            initial.update({
+-                'wie': instance.wie,
+-                'datum_anfrage': instance.datum_anfrage,
+-                'anfrage_aus': instance.anfrage_aus,
+-                'wer_hat_angefragt': instance.wer_hat_angefragt,
+-                'art_der_anfrage': instance.art_der_anfrage,
+-                'termin_vergeben': instance.termin_vergeben,
+-                'termin_datum': instance.termin_datum,
+-                'termin_ort': instance.termin_ort,
+-            })
+-            kwargs['initial'] = initial
+-        
+-        super().__init__(*args, **kwargs)
+-    
+-    def save(self, user=None):
+-        """Update the existing Anfrage instance with form data."""
+-        data = self.get_anfrage_data()
+-        for field, value in data.items():
+-            setattr(self.instance, field, value)
+-        if user:
+-            self.instance.bearbeitet_von = user
+-        self.instance.save()
+-        return self.instance
+diff --git a/src/core/migrations/0009_add_anfrage_model.py b/src/core/migrations/0009_add_anfrage_model.py
+deleted file mode 100644
+index c61fb9a..0000000
+--- a/src/core/migrations/0009_add_anfrage_model.py
++++ /dev/null
+@@ -1,83 +0,0 @@
+-# Generated by Django 6.0.2 on 2026-02-04 22:23
+-
+-import django.db.models.deletion
+-import uuid
+-from django.conf import settings
+-from django.db import migrations, models
+-
+-
+-class Migration(migrations.Migration):
+-
+-    dependencies = [
+-        ('core', '0008_assign_erweitert_permissions'),
+-    ]
+-
+-    operations = [
+-        migrations.AlterModelOptions(
+-            name='permissionset',
+-            options={'verbose_name': 'Permission Set', 'verbose_name_plural': 'Permission Sets'},
+-        ),
+-        migrations.AddField(
+-            model_name='fall',
+-            name='folgen_der_gewalt',
+-            field=models.ManyToManyField(blank=True, help_text='Consequence types linked via junction table Fall_FolgenDerGewalt', related_name='faelle', through='core.Fall_FolgenDerGewalt', to='core.folgendergewalt'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_assign_roles',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das Zuweisen und ├ändern von Benutzerrollen'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_delete_cases',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das Archivieren von F├ñllen (Soft Delete)'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_edit_cases',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das Erstellen und Bearbeiten von F├ñllen, Beratungen und Gewalttaten'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_hard_delete_cases',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das permanente L├Âschen von F├ñllen (Hard Delete mit CASCADE)'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_manage_reference_data',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das Hinzuf├╝gen und Bearbeiten von GewalttatArt und FolgenDerGewalt'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_manage_users',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das Erstellen, Bearbeiten und L├Âschen von Benutzern'),
+-        ),
+-        migrations.AlterField(
+-            model_name='permissionset',
+-            name='can_view_cases',
+-            field=models.BooleanField(default=False, help_text='Erlaubt das Anzeigen von F├ñllen'),
+-        ),
+-        migrations.CreateModel(
+-            name='Anfrage',
+-            fields=[
+-                ('anfrage_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+-                ('wie', models.CharField(choices=[('EMAIL', 'E-Mail'), ('TELEFON', 'Telefon'), ('ANDERE', 'andere')], max_length=20, verbose_name='Kontaktweg')),
+-                ('datum_anfrage', models.DateField(verbose_name='Datum der Anfrage')),
+-                ('anfrage_aus', models.CharField(choices=[('LEIPZIG_STADT', 'Leipzig Stadt'), ('LEIPZIG_LAND', 'Leipzig Land'), ('NORDSACHSEN', 'Nordsachsen'), ('SACHSEN', 'Sachsen'), ('ANDERE', 'andere')], max_length=20, verbose_name='Anfrage aus')),
+-                ('wer_hat_angefragt', models.CharField(choices=[('F', 'Fachkraft'), ('A', 'Angeh├Ârige:r'), ('B', 'Betroffene:r'), ('ANONYM', 'anonym'), ('QB', 'queer Betroffene:r'), ('QF', 'queer Fachkraft'), ('QA', 'queer Angeh├Ârige:r'), ('Q_ANONYM', 'queer anonym'), ('FFB', 'Fachkraft f├╝r Betroffene'), ('AFB', 'Angeh├Ârige:r f├╝r Betroffene'), ('FFQB', 'Fachkraft f├╝r queere Betroffene'), ('AFQB', 'Angeh├Ârige f├╝r queere Betroffene')], max_length=20, verbose_name='Wer hat angefragt')),
+-                ('art_der_anfrage', models.CharField(choices=[('MEDIZINISCHE_SOFORTHILFE', 'Medizinische Soforthilfe'), ('VERTRAULICHE_SPURENSICHERUNG', 'Vertrauliche Spurensicherung'), ('BERATUNGSBEDARF', 'Beratungsbedarf'), ('ZU_RECHTLICHEN', 'zu Rechtlichen'), ('SONSTIGES', 'Sonstiges')], max_length=40, verbose_name='Art der Anfrage')),
+-                ('termin_vergeben', models.BooleanField(default=False, verbose_name='Termin vergeben')),
+-                ('termin_datum', models.DateField(blank=True, null=True, verbose_name='Datum des Termins')),
+-                ('termin_ort', models.CharField(blank=True, choices=[('LEIPZIG_STADT', 'Leipzig Stadt'), ('LEIPZIG_NORD', 'Leipzig Nord'), ('NORDSACHSEN', 'Nordsachsen')], max_length=20, verbose_name='Ort des Termins')),
+-                ('erstellungsdatum', models.DateTimeField(auto_now_add=True)),
+-                ('bearbeitet_von', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='erstellte_anfragen', to=settings.AUTH_USER_MODEL)),
+-            ],
+-            options={
+-                'verbose_name': 'Anfrage',
+-                'verbose_name_plural': 'Anfragen',
+-                'db_table': 'anfrage',
+-                'ordering': ['-datum_anfrage'],
+-                'indexes': [models.Index(fields=['datum_anfrage'], name='anfrage_datum_a_2a0c2c_idx'), models.Index(fields=['anfrage_aus'], name='anfrage_anfrage_04720d_idx')],
+-            },
+-        ),
+-    ]
+diff --git a/src/core/models/__init__.py b/src/core/models/__init__.py
+index 15043f7..de762bc 100644
+--- a/src/core/models/__init__.py
++++ b/src/core/models/__init__.py
+@@ -3,7 +3,7 @@ Core models package.
+ Imports all models for Django to discover.
+ """
+ from .user_models import User, Role, PermissionSet, Session
+-from .fall_models import Fall, PersonenbezogeneDaten, Beratung, Gewalttat, Anfrage
++from .fall_models import Fall, PersonenbezogeneDaten, Beratung, Gewalttat
+ from .reference_models import (
+     GewalttatArt,
+     FolgenDerGewalt,
+@@ -13,7 +13,7 @@ from .reference_models import (
+ 
+ __all__ = [
+     'User', 'Role', 'PermissionSet', 'Session',
+-    'Fall', 'PersonenbezogeneDaten', 'Beratung', 'Gewalttat', 'Anfrage',
++    'Fall', 'PersonenbezogeneDaten', 'Beratung', 'Gewalttat',
+     'GewalttatArt', 'FolgenDerGewalt',
+     'Gewalttat_GewalttatArt', 'Fall_FolgenDerGewalt'
+ ]
+diff --git a/src/core/models/fall_models.py b/src/core/models/fall_models.py
+index e87f21d..23a8fdc 100644
+--- a/src/core/models/fall_models.py
++++ b/src/core/models/fall_models.py
+@@ -751,164 +751,3 @@ class Gewalttat(models.Model):
+         
+         if errors:
+             raise ValidationError(errors)
+-
+-
+-class Anfrage(models.Model):
+-    """
+-    One-time inquiry record (distinct from Fall/Case).
+-    Anfragen are single data entries that do not require follow-up editing.
+-    Used to track initial contacts that may or may not become full cases.
+-    """
+-    
+-    # Contact method choices
+-    WIE_CHOICES = [
+-        ('EMAIL', 'E-Mail'),
+-        ('TELEFON', 'Telefon'),
+-        ('ANDERE', 'andere'),
+-    ]
+-    
+-    # Origin/Location choices
+-    ANFRAGE_AUS_CHOICES = [
+-        ('LEIPZIG_STADT', 'Leipzig Stadt'),
+-        ('LEIPZIG_LAND', 'Leipzig Land'),
+-        ('NORDSACHSEN', 'Nordsachsen'),
+-        ('SACHSEN', 'Sachsen'),
+-        ('ANDERE', 'andere'),
+-    ]
+-    
+-    # Requester type choices
+-    WER_HAT_ANGEFRAGT_CHOICES = [
+-        ('F', 'Fachkraft'),
+-        ('A', 'Angeh├Ârige:r'),
+-        ('B', 'Betroffene:r'),
+-        ('ANONYM', 'anonym'),
+-        ('QB', 'queer Betroffene:r'),
+-        ('QF', 'queer Fachkraft'),
+-        ('QA', 'queer Angeh├Ârige:r'),
+-        ('Q_ANONYM', 'queer anonym'),
+-        ('FFB', 'Fachkraft f├╝r Betroffene'),
+-        ('AFB', 'Angeh├Ârige:r f├╝r Betroffene'),
+-        ('FFQB', 'Fachkraft f├╝r queere Betroffene'),
+-        ('AFQB', 'Angeh├Ârige f├╝r queere Betroffene'),
+-    ]
+-    
+-    # Inquiry type choices
+-    ART_DER_ANFRAGE_CHOICES = [
+-        ('MEDIZINISCHE_SOFORTHILFE', 'Medizinische Soforthilfe'),
+-        ('VERTRAULICHE_SPURENSICHERUNG', 'Vertrauliche Spurensicherung'),
+-        ('BERATUNGSBEDARF', 'Beratungsbedarf'),
+-        ('ZU_RECHTLICHEN', 'zu Rechtlichen'),
+-        ('SONSTIGES', 'Sonstiges'),
+-    ]
+-    
+-    # Appointment location choices
+-    TERMIN_ORT_CHOICES = [
+-        ('LEIPZIG_STADT', 'Leipzig Stadt'),
+-        ('LEIPZIG_NORD', 'Leipzig Nord'),
+-        ('NORDSACHSEN', 'Nordsachsen'),
+-    ]
+-    
+-    # Primary key
+-    anfrage_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+-    
+-    # Contact method
+-    wie = models.CharField(
+-        max_length=20,
+-        choices=WIE_CHOICES,
+-        verbose_name="Kontaktweg"
+-    )
+-    
+-    # Date of inquiry
+-    datum_anfrage = models.DateField(
+-        verbose_name="Datum der Anfrage"
+-    )
+-    
+-    # Origin
+-    anfrage_aus = models.CharField(
+-        max_length=20,
+-        choices=ANFRAGE_AUS_CHOICES,
+-        verbose_name="Anfrage aus"
+-    )
+-    
+-    # Who made the inquiry
+-    wer_hat_angefragt = models.CharField(
+-        max_length=20,
+-        choices=WER_HAT_ANGEFRAGT_CHOICES,
+-        verbose_name="Wer hat angefragt"
+-    )
+-    
+-    # Type of inquiry
+-    art_der_anfrage = models.CharField(
+-        max_length=40,
+-        choices=ART_DER_ANFRAGE_CHOICES,
+-        verbose_name="Art der Anfrage"
+-    )
+-    
+-    # Appointment scheduled
+-    termin_vergeben = models.BooleanField(
+-        default=False,
+-        verbose_name="Termin vergeben"
+-    )
+-    
+-    # Appointment date (only if termin_vergeben=True)
+-    termin_datum = models.DateField(
+-        null=True,
+-        blank=True,
+-        verbose_name="Datum des Termins"
+-    )
+-    
+-    # Appointment location (only if termin_vergeben=True)
+-    termin_ort = models.CharField(
+-        max_length=20,
+-        choices=TERMIN_ORT_CHOICES,
+-        blank=True,
+-        verbose_name="Ort des Termins"
+-    )
+-    
+-    # Timestamps
+-    erstellungsdatum = models.DateTimeField(auto_now_add=True)
+-    
+-    # User who created the record
+-    bearbeitet_von = models.ForeignKey(
+-        settings.AUTH_USER_MODEL,
+-        on_delete=models.SET_NULL,
+-        null=True,
+-        blank=True,
+-        related_name='erstellte_anfragen'
+-    )
+-    
+-    class Meta:
+-        db_table = 'anfrage'
+-        ordering = ['-datum_anfrage']
+-        verbose_name = 'Anfrage'
+-        verbose_name_plural = 'Anfragen'
+-        indexes = [
+-            models.Index(fields=['datum_anfrage']),
+-            models.Index(fields=['anfrage_aus']),
+-        ]
+-    
+-    def __str__(self):
+-        return f"Anfrage {self.datum_anfrage} - {self.get_wer_hat_angefragt_display()}"
+-    
+-    def clean(self):
+-        """Cross-field validation for Anfrage model."""
+-        super().clean()
+-        errors = {}
+-        
+-        # If termin_vergeben=True, termin_datum and termin_ort should be filled
+-        # Note: This is a soft validation - the form will warn but allow saving
+-        if self.termin_vergeben:
+-            if not self.termin_datum:
+-                errors['termin_datum'] = ['Termin-Datum empfohlen wenn Termin vergeben']
+-            if not self.termin_ort:
+-                errors['termin_ort'] = ['Termin-Ort empfohlen wenn Termin vergeben']
+-        
+-        # If termin_vergeben=False, termin_datum and termin_ort should be empty
+-        if not self.termin_vergeben:
+-            if self.termin_datum:
+-                errors['termin_datum'] = ['Nur g├╝ltig wenn Termin vergeben']
+-            if self.termin_ort:
+-                errors['termin_ort'] = ['Nur g├╝ltig wenn Termin vergeben']
+-        
+-        if errors:
+-            raise ValidationError(errors)
+diff --git a/src/core/models/survey_models_fall.py b/src/core/models/survey_models_fall.py
+new file mode 100644
+index 0000000..e2dfec1
+--- /dev/null
++++ b/src/core/models/survey_models_fall.py
+@@ -0,0 +1,46 @@
++"""
++
++Survey models for questions and answers 
++These can be added, edited and deleted dynamically 
++
++"""
++import uuid
++from django.contrib.auth.models import AbstractUser
++from django.db import models
++from fall_models import Fall
++
++#Survey Questions for Cases
++class CaseSurveyQuestions(models.Model):
++    #Primary Key 
++    question_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
++    #Fragenname 
++    name = models.CharField(max_length=100, unique= True)
++    #Name in form 
++    label = models.CharField(max_length= 100)
++    #is it a required question for their statistics 
++    required = models.BooleanField(default= False)
++    #f├╝r choices https://docs.djangoproject.com/en/6.0/ref/models/fields/ 
++    field_type = models.CharField(max_length=25, choices= 
++    [("string", "String"), ("boolean", "Boolean"), ("integer","Integer"), ("double","Double"),("date", "Date")]) 
++    class Meta: 
++        db_table = 'case_survey_question' 
++        ordering = ['label']
++        verboose_name = 'Frage f├╝r Fall'
++        verboose_name_plural = 'Fragen f├╝r Fall'
++    
++    def __str__(self): 
++        return self.label 
++    
++#Survey Answers for Cases 
++class CaseSurveyAnswers(models.Model): 
++    answer_id = models.UUIDField(primary_key= True, default=uuid.uuid4, editable= False)
++    value = models.CharField(max_length=100, unique= False) 
++    case_id = models.ForeignKey(Fall, on_delete= models.CASCADE, related_name='survey answer') 
++    survey_question = models.ForeignKey(CaseSurveyQuestions, on_delete= models.CASCADE, related_name='answers') 
++    class Meta: 
++        db_table = 'case_survey_answer'
++        unique_together = [['case', 'question' ]]
++        verboose_name = 'Antwort f├╝r Fall'
++        verboose_name_plural = 'Antworten f├╝r Fall'
++    def __str__(self): 
++        return self.value
+\ No newline at end of file
+diff --git a/src/core/services/case_survey_manager.py b/src/core/services/case_survey_manager.py
+new file mode 100644
+index 0000000..faefa08
+--- /dev/null
++++ b/src/core/services/case_survey_manager.py
+@@ -0,0 +1,54 @@
++"""
++case survey Manager - handles actions with case_survey
++Most operations handled by Django ORM in views.
++
++"""
++
++from typing import Any
++from uuid import UUID
++from datetime import date
++
++from django.db import transaction
++from django.core.exceptions import ValidationError, PermissionDenied
++
++from core.models import Fall, User, CaseSurveyQuestion, CaseSurveyAnswer
++
++class SurveyManager:
++    
++    "Service class for operations requiring atomic transactions or permission checks."
++
++    @staticmethod
++    def createCaseSurveyQuestion (data: dict, user: User) -> CaseSurveyQuestion:
++        #create new Survey Question 
++        
++        question = CaseSurveyQuestion(**data)
++        
++        return question
++    
++    @staticmethod
++    def deleteSurveyQuestion(question_id: UUID, user: User) -> None:
++
++        question = CaseSurveyQuestion.objects.get(pk=question_id)
++        question.delete()
++
++    @staticmethod
++    @transaction.atomic
++    def setSurveyAnswer(case_id: UUID,question_id: UUID,value: Any) -> CaseSurveyAnswer:
++        """
++        Creates or updates an answer atomically.
++        """
++
++        Fall = Fall.objects.get(pk= fall_id)
++        question = CaseSurveyQuestion.objects.get(pk=question_id)
++
++
++        answer, _ = CaseSurveyAnswer.objects.update_or_create(
++            Fall = Fall,
++            question=question,
++            defaults={"value": str(value)}
++        )
++
++        return answer
++     
++
++
+diff --git a/src/core/templates/core/anfrage_delete_confirm.html b/src/core/templates/core/anfrage_delete_confirm.html
+deleted file mode 100644
+index 76556c9..0000000
+--- a/src/core/templates/core/anfrage_delete_confirm.html
++++ /dev/null
+@@ -1,67 +0,0 @@
+-{% extends 'core/base.html' %}
+-
+-{% block title %}Anfrage l├Âschen - B-EV{% endblock %}
+-
+-{% block content %}
+-<h1>Anfrage l├Âschen</h1>
+-
+-<div
+-    style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+-    <h2 style="margin-top: 0; color: #721c24;">ÔÜá´©Å Best├ñtigung erforderlich</h2>
+-    <p style="margin-bottom: 0; color: #721c24;">
+-        M├Âchten Sie diese Anfrage wirklich l├Âschen?
+-    </p>
+-</div>
+-
+-<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+-    <h3 style="margin-top: 0;">Anfrageinformationen</h3>
+-    <table style="margin-top: 0;">
+-        <tr>
+-            <th style="width: 40%;">Datum</th>
+-            <td>{{ anfrage.datum_anfrage|date:"d.m.Y" }}</td>
+-        </tr>
+-        <tr>
+-            <th>Kontaktweg</th>
+-            <td>{{ anfrage.get_wie_display }}</td>
+-        </tr>
+-        <tr>
+-            <th>Anfrage aus</th>
+-            <td>{{ anfrage.get_anfrage_aus_display }}</td>
+-        </tr>
+-        <tr>
+-            <th>Wer hat angefragt</th>
+-            <td>{{ anfrage.get_wer_hat_angefragt_display }}</td>
+-        </tr>
+-        <tr>
+-            <th>Art der Anfrage</th>
+-            <td>{{ anfrage.get_art_der_anfrage_display }}</td>
+-        </tr>
+-        {% if anfrage.termin_vergeben %}
+-        <tr>
+-            <th>Termin</th>
+-            <td>{{ anfrage.termin_datum|date:"d.m.Y" }} - {{ anfrage.get_termin_ort_display }}</td>
+-        </tr>
+-        {% endif %}
+-        <tr>
+-            <th>Erstellt von</th>
+-            <td>{{ anfrage.bearbeitet_von.username|default:"-" }}</td>
+-        </tr>
+-    </table>
+-</div>
+-
+-<div
+-    style="background-color: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+-    <p style="margin: 0;">
+-        <strong>Ôä╣´©Å Hinweis:</strong> Diese Aktion kann nicht r├╝ckg├ñngig gemacht werden.
+-    </p>
+-</div>
+-
+-<form method="post">
+-    {% csrf_token %}
+-
+-    <div class="form-actions">
+-        <button type="submit" class="btn btn-danger">Anfrage l├Âschen</button>
+-        <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Abbrechen</a>
+-    </div>
+-</form>
+-{% endblock %}
+\ No newline at end of file
+diff --git a/src/core/templates/core/anfrage_form.html b/src/core/templates/core/anfrage_form.html
+deleted file mode 100644
+index d95d045..0000000
+--- a/src/core/templates/core/anfrage_form.html
++++ /dev/null
+@@ -1,246 +0,0 @@
+-{% extends 'core/base.html' %}
+-
+-{% block title %}{{ action }} Anfrage - B-EV{% endblock %}
+-
+-{% block content %}
+-<h1>{{ action }} Anfrage</h1>
+-
+-{% if show_warning %}
+-<!-- Warning Modal for incomplete fields -->
+-<div class="warning-modal" id="incompleteWarning" style="display: block;">
+-    <div class="warning-modal-content">
+-        <h3>ÔÜá´©Å Unvollst├ñndige Eingabe</h3>
+-        <p>Folgende Felder sind nicht ausgef├╝llt:</p>
+-        <ul>
+-            {% for field in incomplete_fields %}
+-            <li>{{ field }}</li>
+-            {% endfor %}
+-        </ul>
+-        <p>M├Âchten Sie die Felder anpassen oder trotzdem speichern?</p>
+-        <div class="warning-modal-actions">
+-            <button type="button" class="btn btn-primary" onclick="closeWarning()">
+-                Felder anpassen
+-            </button>
+-            <form method="post" style="display: inline;">
+-                {% csrf_token %}
+-                <input type="hidden" name="wie" value="{{ form.wie.value }}">
+-                <input type="hidden" name="datum_anfrage" value="{{ form.datum_anfrage.value }}">
+-                <input type="hidden" name="anfrage_aus" value="{{ form.anfrage_aus.value }}">
+-                <input type="hidden" name="wer_hat_angefragt" value="{{ form.wer_hat_angefragt.value }}">
+-                <input type="hidden" name="art_der_anfrage" value="{{ form.art_der_anfrage.value }}">
+-                <input type="hidden" name="termin_vergeben" value="{% if form.termin_vergeben.value %}on{% endif %}">
+-                <input type="hidden" name="termin_datum" value="{{ form.termin_datum.value|default:'' }}">
+-                <input type="hidden" name="termin_ort" value="{{ form.termin_ort.value|default:'' }}">
+-                <input type="hidden" name="force_save" value="true">
+-                <button type="submit" class="btn btn-warning">
+-                    Trotzdem speichern
+-                </button>
+-            </form>
+-        </div>
+-    </div>
+-</div>
+-{% endif %}
+-
+-<form method="post">
+-    {% csrf_token %}
+-
+-    <h2>Anfrageinformationen</h2>
+-
+-    <div class="form-group">
+-        <label for="{{ form.wie.id_for_label }}">
+-            Wie (Kontaktweg) *
+-        </label>
+-        {{ form.wie }}
+-        {% if form.wie.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.wie.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    <div class="form-group">
+-        <label for="{{ form.datum_anfrage.id_for_label }}">Datum der Anfrage *</label>
+-        {{ form.datum_anfrage }}
+-        {% if form.datum_anfrage.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.datum_anfrage.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    <div class="form-group">
+-        <label for="{{ form.anfrage_aus.id_for_label }}">Anfrage aus *</label>
+-        {{ form.anfrage_aus }}
+-        {% if form.anfrage_aus.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.anfrage_aus.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    <div class="form-group">
+-        <label for="{{ form.wer_hat_angefragt.id_for_label }}">
+-            Wer hat angefragt *
+-        </label>
+-        {{ form.wer_hat_angefragt }}
+-        {% if form.wer_hat_angefragt.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.wer_hat_angefragt.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    <div class="form-group">
+-        <label for="{{ form.art_der_anfrage.id_for_label }}">Art der Anfrage *</label>
+-        {{ form.art_der_anfrage }}
+-        {% if form.art_der_anfrage.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.art_der_anfrage.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    <hr style="margin: 30px 0;">
+-
+-    <h2>Terminvergabe</h2>
+-
+-    <div class="form-group">
+-        <label>
+-            {{ form.termin_vergeben }}
+-            Termin vergeben
+-        </label>
+-    </div>
+-
+-    <div class="form-group" id="termin_datum_wrapper">
+-        <label for="{{ form.termin_datum.id_for_label }}">Datum des Termins</label>
+-        {{ form.termin_datum }}
+-        {% if form.termin_datum.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.termin_datum.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    <div class="form-group" id="termin_ort_wrapper">
+-        <label for="{{ form.termin_ort.id_for_label }}">Ort des Termins</label>
+-        {{ form.termin_ort }}
+-        {% if form.termin_ort.errors %}
+-        <ul class="errorlist">
+-            {% for error in form.termin_ort.errors %}
+-            <li>{{ error }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-    </div>
+-
+-    {% if form.non_field_errors %}
+-    <ul class="errorlist">
+-        {% for error in form.non_field_errors %}
+-        <li>{{ error }}</li>
+-        {% endfor %}
+-    </ul>
+-    {% endif %}
+-
+-    <div class="form-actions">
+-        <button type="submit" class="btn btn-success">{{ action }}</button>
+-        <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Abbrechen</a>
+-    </div>
+-</form>
+-{% endblock %}
+-
+-{% block extra_js %}
+-<script>
+-    // Conditional field visibility
+-    document.addEventListener('DOMContentLoaded', function () {
+-        // Helper to show/hide wrapper divs
+-        function toggleField(wrapperId, show) {
+-            var el = document.getElementById(wrapperId);
+-            if (el) el.style.display = show ? '' : 'none';
+-        }
+-
+-        // termin_vergeben checkbox -> termin_datum + termin_ort
+-        var terminCheck = document.getElementById('id_termin_vergeben');
+-        function updateTermin() {
+-            var show = terminCheck && terminCheck.checked;
+-            toggleField('termin_datum_wrapper', show);
+-            toggleField('termin_ort_wrapper', show);
+-        }
+-        if (terminCheck) {
+-            terminCheck.addEventListener('change', updateTermin);
+-            updateTermin();
+-        }
+-    });
+-
+-    // Close warning modal and return to form editing
+-    function closeWarning() {
+-        var modal = document.getElementById('incompleteWarning');
+-        if (modal) modal.style.display = 'none';
+-    }
+-</script>
+-
+-<style>
+-    /* Warning Modal Styling */
+-    .warning-modal {
+-        position: fixed;
+-        top: 0;
+-        left: 0;
+-        width: 100%;
+-        height: 100%;
+-        background-color: rgba(0, 0, 0, 0.5);
+-        display: flex;
+-        justify-content: center;
+-        align-items: center;
+-        z-index: 1000;
+-    }
+-
+-    .warning-modal-content {
+-        background: white;
+-        padding: 30px;
+-        border-radius: 8px;
+-        max-width: 500px;
+-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+-    }
+-
+-    .warning-modal-content h3 {
+-        margin-top: 0;
+-        color: #856404;
+-    }
+-
+-    .warning-modal-content ul {
+-        background: #fff3cd;
+-        padding: 15px 15px 15px 35px;
+-        border-radius: 4px;
+-        border: 1px solid #ffc107;
+-    }
+-
+-    .warning-modal-actions {
+-        margin-top: 20px;
+-        display: flex;
+-        gap: 10px;
+-        justify-content: flex-end;
+-    }
+-
+-    .btn-warning {
+-        background-color: #ffc107;
+-        border-color: #ffc107;
+-        color: #212529;
+-    }
+-
+-    .btn-warning:hover {
+-        background-color: #e0a800;
+-        border-color: #d39e00;
+-    }
+-</style>
+-{% endblock %}
+\ No newline at end of file
+diff --git a/src/core/templates/core/anfrage_list.html b/src/core/templates/core/anfrage_list.html
+deleted file mode 100644
+index d5c8a2c..0000000
+--- a/src/core/templates/core/anfrage_list.html
++++ /dev/null
+@@ -1,168 +0,0 @@
+-{% extends 'core/base.html' %}
+-
+-{% block title %}Anfragen - B-EV{% endblock %}
+-
+-{% block content %}
+-<h1>Anfragen</h1>
+-
+-<div class="page-actions">
+-    <a href="{% url 'core:anfrage_create' %}" class="btn btn-success">
+-        + Neue Anfrage
+-    </a>
+-</div>
+-
+-<form method="get" class="search-form">
+-    <input type="date" name="datum" value="{{ datum_filter }}" title="Nach Datum filtern">
+-    <input type="text" name="search" placeholder="Suche nach Art oder Herkunft..." value="{{ search_query }}">
+-    <button type="submit" class="btn btn-primary">Suchen</button>
+-    {% if search_query or datum_filter %}
+-    <a href="{% url 'core:anfrage_list' %}" class="btn btn-secondary">Zur├╝cksetzen</a>
+-    {% endif %}
+-</form>
+-
+-{% if anfragen %}
+-<table class="data-table">
+-    <thead>
+-        <tr>
+-            <th>Datum</th>
+-            <th>Kontaktweg</th>
+-            <th>Anfrage aus</th>
+-            <th>Wer hat angefragt</th>
+-            <th>Art der Anfrage</th>
+-            <th>Termin vergeben</th>
+-            <th>Erstellt von</th>
+-            <th>Aktionen</th>
+-        </tr>
+-    </thead>
+-    <tbody>
+-        {% for anfrage in anfragen %}
+-        <tr>
+-            <td>{{ anfrage.datum_anfrage|date:"d.m.Y" }}</td>
+-            <td>{{ anfrage.get_wie_display }}</td>
+-            <td>{{ anfrage.get_anfrage_aus_display }}</td>
+-            <td>{{ anfrage.get_wer_hat_angefragt_display }}</td>
+-            <td>{{ anfrage.get_art_der_anfrage_display }}</td>
+-            <td>
+-                {% if anfrage.termin_vergeben %}
+-                <span class="badge badge-success">Ja</span>
+-                <br><small>{{ anfrage.termin_datum|date:"d.m.Y" }} - {{ anfrage.get_termin_ort_display }}</small>
+-                {% else %}
+-                <span class="badge badge-secondary">Nein</span>
+-                {% endif %}
+-            </td>
+-            <td>{{ anfrage.bearbeitet_von.username|default:"-" }}</td>
+-            <td class="actions-cell">
+-                <a href="{% url 'core:anfrage_edit' anfrage.anfrage_id %}" class="btn btn-sm btn-primary"
+-                    title="Bearbeiten">Ô£Å´©Å</a>
+-                <a href="{% url 'core:anfrage_delete' anfrage.anfrage_id %}" class="btn btn-sm btn-danger"
+-                    title="L├Âschen">­ƒùæ´©Å</a>
+-            </td>
+-        </tr>
+-        {% endfor %}
+-    </tbody>
+-</table>
+-{% else %}
+-<p class="no-data">Keine Anfragen gefunden.</p>
+-{% endif %}
+-{% endblock %}
+-
+-{% block extra_css %}
+-<style>
+-    .page-actions {
+-        margin-bottom: 20px;
+-    }
+-
+-    .search-form {
+-        margin-bottom: 20px;
+-        display: flex;
+-        gap: 10px;
+-        flex-wrap: wrap;
+-        align-items: center;
+-    }
+-
+-    .search-form input[type="text"] {
+-        flex: 1;
+-        max-width: 400px;
+-        padding: 8px 12px;
+-        border: 1px solid #ddd;
+-        border-radius: 4px;
+-    }
+-
+-    .search-form input[type="date"] {
+-        padding: 8px 12px;
+-        border: 1px solid #ddd;
+-        border-radius: 4px;
+-    }
+-
+-    .data-table {
+-        width: 100%;
+-        border-collapse: collapse;
+-        margin-top: 10px;
+-    }
+-
+-    .data-table th,
+-    .data-table td {
+-        padding: 12px;
+-        text-align: left;
+-        border-bottom: 1px solid #ddd;
+-    }
+-
+-    .data-table th {
+-        background: #f8f9fa;
+-        font-weight: 600;
+-    }
+-
+-    .data-table tbody tr:hover {
+-        background: #f5f5f5;
+-    }
+-
+-    .badge {
+-        display: inline-block;
+-        padding: 4px 8px;
+-        border-radius: 4px;
+-        font-size: 12px;
+-        font-weight: 600;
+-    }
+-
+-    .badge-success {
+-        background: #28a745;
+-        color: white;
+-    }
+-
+-    .badge-secondary {
+-        background: #6c757d;
+-        color: white;
+-    }
+-
+-    .no-data {
+-        text-align: center;
+-        color: #6c757d;
+-        padding: 40px;
+-        font-style: italic;
+-    }
+-
+-    .actions-cell {
+-        white-space: nowrap;
+-    }
+-
+-    .actions-cell .btn {
+-        margin-right: 4px;
+-    }
+-
+-    .btn-sm {
+-        padding: 4px 8px;
+-        font-size: 13px;
+-    }
+-
+-    .btn-danger {
+-        background-color: #dc3545;
+-        border-color: #dc3545;
+-        color: white;
+-    }
+-
+-    .btn-danger:hover {
+-        background-color: #c82333;
+-        border-color: #bd2130;
+-    }
+-</style>
+-{% endblock %}
+\ No newline at end of file
+diff --git a/src/core/urls.py b/src/core/urls.py
+index 89d06be..5150678 100644
+--- a/src/core/urls.py
++++ b/src/core/urls.py
+@@ -7,7 +7,7 @@ Uses Django's built-in auth views for login/logout.
+ 
+ from django.urls import path
+ from django.contrib.auth import views as auth_views
+-from core.views import fall_views, beratung_views, gewalttat_views, folgen_views, anfrage_views
++from core.views import fall_views, beratung_views, gewalttat_views, folgen_views
+ 
+ app_name = 'core'
+ 
+@@ -47,10 +47,4 @@ urlpatterns = [
+     path('cases/<uuid:fall_id>/folgen/add/', folgen_views.folgen_add, name='folgen_add'),
+     path('folgen/<int:folgen_id>/edit/', folgen_views.folgen_edit, name='folgen_edit'),
+     path('folgen/<int:folgen_id>/delete/', folgen_views.folgen_delete, name='folgen_delete'),
+-    
+-    # ===== ANFRAGE (INQUIRIES) =====
+-    path('anfragen/', anfrage_views.anfrage_list, name='anfrage_list'),
+-    path('anfragen/create/', anfrage_views.anfrage_create, name='anfrage_create'),
+-    path('anfragen/<uuid:anfrage_id>/edit/', anfrage_views.anfrage_edit, name='anfrage_edit'),
+-    path('anfragen/<uuid:anfrage_id>/delete/', anfrage_views.anfrage_delete, name='anfrage_delete'),
+ ]
+diff --git a/src/core/views/__init__.py b/src/core/views/__init__.py
+index b096e37..fcfd5a8 100644
+--- a/src/core/views/__init__.py
++++ b/src/core/views/__init__.py
+@@ -8,13 +8,11 @@ from . import fall_views
+ from . import beratung_views
+ from . import gewalttat_views
+ from . import folgen_views
+-from . import anfrage_views
+ 
+ __all__ = [
+     'fall_views',
+     'beratung_views',
+     'gewalttat_views',
+     'folgen_views',
+-    'anfrage_views',
+ ]
+ 
+diff --git a/src/core/views/anfrage_views.py b/src/core/views/anfrage_views.py
+deleted file mode 100644
+index 54966b8..0000000
+--- a/src/core/views/anfrage_views.py
++++ /dev/null
+@@ -1,195 +0,0 @@
+-"""
+-Views for Anfrage (Inquiry) management.
+-
+-Handles inquiry listing, creation, editing, and deletion
+-with soft validation warnings and date-based search.
+-"""
+-
+-from django.shortcuts import render, redirect, get_object_or_404
+-from django.contrib.auth.decorators import login_required
+-from django.contrib import messages
+-
+-from core.models import Anfrage
+-from core.forms import AnfrageCreateForm, AnfrageEditForm
+-from core.decorators import permission_required_custom
+-
+-
+-@login_required
+-def anfrage_list(request):
+-    """
+-    Display list of all inquiries with optional date and text search.
+-    
+-    Permission: All authenticated users
+-    
+-    GET parameters:
+-        search: text filter on art_der_anfrage / anfrage_aus
+-        datum: date filter on datum_anfrage (YYYY-MM-DD)
+-    """
+-    # Query all inquiries ordered by date (newest first)
+-    anfragen = Anfrage.objects.all().select_related(
+-        'bearbeitet_von'
+-    ).order_by('-datum_anfrage')
+-    
+-    # Date-based search
+-    datum_filter = request.GET.get('datum', '')
+-    if datum_filter:
+-        anfragen = anfragen.filter(datum_anfrage=datum_filter)
+-    
+-    # Text-based search
+-    search_query = request.GET.get('search', '')
+-    if search_query:
+-        anfragen = anfragen.filter(
+-            art_der_anfrage__icontains=search_query
+-        ) | anfragen.filter(
+-            anfrage_aus__icontains=search_query
+-        )
+-    
+-    context = {
+-        'anfragen': anfragen,
+-        'search_query': search_query,
+-        'datum_filter': datum_filter,
+-    }
+-    return render(request, 'core/anfrage_list.html', context)
+-
+-
+-@login_required
+-@permission_required_custom('can_edit_cases')
+-def anfrage_create(request):
+-    """
+-    Create new inquiry with soft validation.
+-    
+-    Permission: Users with can_edit_cases permission
+-    
+-    Workflow:
+-    1. User submits form
+-    2. If incomplete and not force_save, show warning with incomplete fields
+-    3. User can choose "Felder anpassen" (return to form) or "Trotzdem speichern" (force save)
+-    4. On force_save or complete form, save and redirect to list
+-    """
+-    # Check if this is a force save (user confirmed saving incomplete data)
+-    force_save = request.POST.get('force_save') == 'true'
+-    
+-    if request.method == 'POST':
+-        form = AnfrageCreateForm(request.POST)
+-        
+-        if form.is_valid():
+-            # Check for incomplete fields (soft validation)
+-            incomplete_fields = form.get_incomplete_fields()
+-            
+-            if incomplete_fields and not force_save:
+-                # Show warning dialog with incomplete fields
+-                context = {
+-                    'form': form,
+-                    'action': 'Erstellen',
+-                    'show_warning': True,
+-                    'incomplete_fields': incomplete_fields,
+-                }
+-                return render(request, 'core/anfrage_form.html', context)
+-            
+-            try:
+-                # Get form data
+-                anfrage_data = form.get_anfrage_data()
+-                
+-                # Add user from request context
+-                anfrage_data['bearbeitet_von'] = request.user
+-                
+-                # Create the Anfrage record
+-                anfrage = Anfrage.objects.create(**anfrage_data)
+-                
+-                messages.success(
+-                    request,
+-                    f'Anfrage vom {anfrage.datum_anfrage} erfolgreich gespeichert.'
+-                )
+-                return redirect('core:anfrage_list')
+-                
+-            except Exception as e:
+-                messages.error(request, f'Fehler beim Speichern: {str(e)}')
+-        else:
+-            messages.error(request, 'Bitte korrigieren Sie die Fehler im Formular.')
+-    else:
+-        form = AnfrageCreateForm()
+-    
+-    context = {
+-        'form': form,
+-        'action': 'Erstellen',
+-        'show_warning': False,
+-        'incomplete_fields': [],
+-    }
+-    return render(request, 'core/anfrage_form.html', context)
+-
+-
+-@login_required
+-@permission_required_custom('can_edit_cases')
+-def anfrage_edit(request, anfrage_id):
+-    """
+-    Edit an existing inquiry with soft validation.
+-    
+-    Permission: Users with can_edit_cases permission
+-    """
+-    anfrage = get_object_or_404(Anfrage, anfrage_id=anfrage_id)
+-    
+-    force_save = request.POST.get('force_save') == 'true'
+-    
+-    if request.method == 'POST':
+-        form = AnfrageEditForm(request.POST, instance=anfrage)
+-        
+-        if form.is_valid():
+-            incomplete_fields = form.get_incomplete_fields()
+-            
+-            if incomplete_fields and not force_save:
+-                context = {
+-                    'form': form,
+-                    'anfrage': anfrage,
+-                    'action': 'Bearbeiten',
+-                    'show_warning': True,
+-                    'incomplete_fields': incomplete_fields,
+-                }
+-                return render(request, 'core/anfrage_form.html', context)
+-            
+-            try:
+-                form.save(user=request.user)
+-                
+-                messages.success(
+-                    request,
+-                    f'Anfrage vom {anfrage.datum_anfrage} erfolgreich aktualisiert.'
+-                )
+-                return redirect('core:anfrage_list')
+-                
+-            except Exception as e:
+-                messages.error(request, f'Fehler beim Speichern: {str(e)}')
+-        else:
+-            messages.error(request, 'Bitte korrigieren Sie die Fehler im Formular.')
+-    else:
+-        form = AnfrageEditForm(instance=anfrage)
+-    
+-    context = {
+-        'form': form,
+-        'anfrage': anfrage,
+-        'action': 'Bearbeiten',
+-        'show_warning': False,
+-        'incomplete_fields': [],
+-    }
+-    return render(request, 'core/anfrage_form.html', context)
+-
+-
+-@login_required
+-@permission_required_custom('can_delete_cases')
+-def anfrage_delete(request, anfrage_id):
+-    """
+-    Delete an inquiry after confirmation.
+-    
+-    Permission: Users with can_delete_cases permission
+-    """
+-    anfrage = get_object_or_404(Anfrage, anfrage_id=anfrage_id)
+-    
+-    if request.method == 'POST':
+-        datum = anfrage.datum_anfrage
+-        anfrage.delete()
+-        
+-        messages.success(request, f'Anfrage vom {datum} gel├Âscht.')
+-        return redirect('core:anfrage_list')
+-    
+-    context = {
+-        'anfrage': anfrage,
+-    }
+-    return render(request, 'core/anfrage_delete_confirm.html', context)

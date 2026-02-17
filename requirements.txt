@@ -11,3 +11,4 @@ pytest
 pytest-django
 gunicorn
 django-environ
+django-cors-headers

@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'rest_framework',
     'core'
 ]
 
@@ -58,6 +60,7 @@ LOGOUT_REDIRECT_URL = '/login/'  # ← ADD THIS (where to go after logout)
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,17 +94,11 @@ WSGI_APPLICATION = 'B_EV.wsgi.application'
 # Database
 # changing to postgresql
 
+# SQLite für lokale Entwicklung (Original: PostgreSQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'bev_dev'),
-        'USER': os.getenv('DB_USER', 'bev_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''), #gets password from env
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-        'OPTIONS': {
-            'connect_timeout': 10, #timeout for connection so it doesnt hang when its unreachable
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -164,3 +161,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS Settings - erlaubt dem Frontend (Quasar) auf das Backend zuzugreifen
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:9000',
+    'http://localhost:8080',
+    'http://127.0.0.1:9000',
+    'http://127.0.0.1:8080',
+]
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
+
