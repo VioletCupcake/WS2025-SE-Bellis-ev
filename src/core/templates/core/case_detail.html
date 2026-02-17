@@ -266,8 +266,7 @@
 
                 <p style="margin: 5px 0;">
                     <strong>Zahl der Vorfälle:</strong>
-                    {% if gewalttat.zahl_der_vorfaelle == 'GENAUE_ZAHL' and gewalttat.zahl_der_vorfaelle_genau is not
-                    None %}
+                    {% if gewalttat.zahl_der_vorfaelle == 'GENAUE_ZAHL' and gewalttat.zahl_der_vorfaelle_genau is not None %}
                     {{ gewalttat.zahl_der_vorfaelle_genau }}
                     {% else %}
                     {{ gewalttat.get_zahl_der_vorfaelle_display|default:"-" }}
@@ -280,8 +279,7 @@
 
                 <p style="margin: 5px 0;">
                     <strong>Anzahl Täter*innen:</strong>
-                    {% if gewalttat.anzahl_taeterinnen == 'GENAUE_ZAHL' and gewalttat.anzahl_taeterinnen_genau is not
-                    None %}
+                    {% if gewalttat.anzahl_taeterinnen == 'GENAUE_ZAHL' and gewalttat.anzahl_taeterinnen_genau is not None %}
                     {{ gewalttat.anzahl_taeterinnen_genau }}
                     {% else %}
                     {{ gewalttat.get_anzahl_taeterinnen_display|default:"-" }}

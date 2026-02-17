@@ -277,6 +277,7 @@
                 {% if user.role.permissions.can_manage_reference_data %}
                 <li><a href="{% url 'core:survey_questions' %}">Zusätzliche Angaben</a></li>
                 {% endif %}
+                <li><a href="{% url 'core:statistics_ui' %}">Statistiken</a></li>
                 <li class="user-info">
                     {{ user.username }} ({{ user.role.name }})
                 </li>

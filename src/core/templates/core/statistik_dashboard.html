@@ -1,0 +1,207 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="statistics-dashboard">
+    <h1>Statistiken</h1>
+
+    <!-- PRESETS & EXPORT HEADER -->
+    <div class="actions-bar" style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+        <div class="presets-section">
+            <form method="get" style="display: inline-flex; gap: 10px; align-items: center;">
+                <label>Preset laden:</label>
+                <select name="load_preset" onchange="this.form.submit()">
+                    <option value="">-- Verfügbare Presets --</option>
+                    <optgroup label="System-Presets">
+                        {% for preset in global_presets %}
+                        <option value="{{ preset.preset_id }}">{{ preset.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Meine Presets">
+                        {% for preset in user_presets %}
+                        <option value="{{ preset.preset_id }}">{{ preset.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </form>
+            
+            <button type="button" onclick="document.getElementById('save-preset-modal').style.display='block'" class="btn btn-secondary btn-sm">Preset speichern</button>
+            <a href="{% url 'core:statistics_ui' %}" class="btn btn-outline-secondary btn-sm">Reset</a>
+        </div>
+
+        <div class="export-section">
+            <span>Exportieren als:</span>
+            <a href="{% url 'core:statistics_export' 'pdf' %}" class="btn btn-primary btn-sm" target="_blank">PDF</a>
+            <a href="{% url 'core:statistics_export' 'xlsx' %}" class="btn btn-primary btn-sm">Excel</a>
+            <a href="{% url 'core:statistics_export' 'csv' %}" class="btn btn-primary btn-sm">CSV</a>
+        </div>
+    </div>
+
+    <!-- FILTER FORM -->
+    <form method="post" id="filter-form" style="margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Zeitraum</h3>
+                <div class="form-group">
+                    <label>Von:</label>
+                    <input type="date" name="date_from" value="{{ config.date_from }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Bis:</label>
+                    <input type="date" name="date_to" value="{{ config.date_to }}" class="form-control">
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <h3>Beratungsstellen</h3>
+                {% for code, label in beratungsstellen_choices %}
+                <div class="form-check">
+                    <input type="checkbox" 
+                           name="beratungsstellen" 
+                           value="{{ code }}" 
+                           id="bs_{{ code }}" 
+                           {% if code in config.beratungsstellen %}
+                           checked
+                           {% endif %}
+                           >
+                    <label for="bs_{{ code }}">{{ label }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4">
+                <h3>Module</h3>
+                <div class="form-check"><input type="checkbox" name="modules" value="personen" checked> Personenbezogene Daten</div>
+                <div class="form-check"><input type="checkbox" name="modules" value="beratung" checked> Beratungen</div>
+                <div class="form-check"><input type="checkbox" name="modules" value="gewalttat" checked> Gewalttaten</div>
+                <div class="form-check"><input type="checkbox" name="modules" value="folgen" checked> Folgen der Gewalt</div>
+                <div class="form-check"><input type="checkbox" name="modules" value="anfragen" checked> Anfragen</div>
+            </div>
+        </div>
+        <div style="margin-top: 15px;">
+            <button type="submit" class="btn btn-success">Filter anwenden</button>
+        </div>
+    </form>
+
+
+    <!-- RESULTS DISPLAY -->
+    <div class="results-container">
+        
+        {% if results.personen %}
+        <div class="panel">
+            <h2>Personenbezogene Daten (Gesamt: {{ results.personen.total }})</h2>
+            <div class="stats-grid">
+                <div>
+                    <h4>Rolle</h4>
+                    <ul>{% for item in results.personen.rolle %}<li>{{ item.rolle_der_ratsuchenden_person }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+                <div>
+                    <h4>Geschlecht</h4>
+                    <ul>{% for item in results.personen.geschlecht %}<li>{{ item.geschlechtsidentitaet }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+                <div>
+                    <h4>Wohnort</h4>
+                    <ul>{% for item in results.personen.wohnort %}<li>{{ item.wohnort }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+                <div>
+                    <h4>Altersgruppen</h4>
+                    <ul>
+                        <li>Unter 18: {{ results.personen.altersgruppen.unter_18 }}</li>
+                        <li>18-27: {{ results.personen.altersgruppen.18_27 }}</li>
+                        <li>Über 27: {{ results.personen.altersgruppen.ueber_27 }}</li>
+                        <li>Unbekannt: {{ results.personen.altersgruppen.unbekannt }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results.beratung %}
+        <div class="panel">
+            <h2>Beratungen (Termine: {{ results.beratung.total_termine }})</h2>
+             <div class="stats-grid">
+                <div>
+                    <h4>Durchführungsart</h4>
+                    <ul>{% for item in results.beratung.durchfuehrungsart %}<li>{{ item.durchfuehrungsart }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+                 <div>
+                    <h4>Durchführungsort</h4>
+                    <ul>{% for item in results.beratung.durchfuehrungsort %}<li>{{ item.durchfuehrungsort }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results.gewalttat %}
+        <div class="panel">
+            <h2>Gewalttaten (Gesamt: {{ results.gewalttat.total }})</h2>
+             <div class="stats-grid">
+                <div>
+                    <h4>Tatort</h4>
+                     <ul>{% for item in results.gewalttat.tatort %}<li>{{ item.tatort }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+                 <div>
+                    <h4>Anzeige</h4>
+                     <ul>{% for item in results.gewalttat.anzeige %}<li>{{ item.anzeige }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if results.folgen %}
+        <div class="panel">
+            <h2>Folgen der Gewalt</h2>
+            <ul>{% for item in results.folgen.kategorien %}<li>{{ item.folge__kategorie }}: {{ item.count }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+
+        {% if results.anfragen %}
+        <div class="panel">
+            <h2>Anfragen (Gesamt: {{ results.anfragen.total }})</h2>
+             <div class="stats-grid">
+                <div>
+                    <h4>Kontaktweg</h4>
+                    <ul>{% for item in results.anfragen.kontaktweg %}<li>{{ item.wie }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+                <div>
+                    <h4>Herkunft</h4>
+                    <ul>{% for item in results.anfragen.herkunft %}<li>{{ item.anfrage_aus }}: {{ item.count }}</li>{% endfor %}</ul>
+                </div>
+             </div>
+        </div>
+        {% endif %}
+
+
+    </div>
+</div>
+
+<!-- SAVE PRESET MODAL (Simple implementation) -->
+<div id="save-preset-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); padding-top:100px;">
+    <div style="background:white; margin:auto; padding:20px; width:400px; border-radius:5px;">
+        <h3>Preset speichern</h3>
+        <form action="{% url 'core:preset_save' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Name des Presets:</label>
+                <input type="text" name="preset_name" required class="form-control">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" name="is_global" id="is_global">
+                <label for="is_global">Global (für alle sichtbar)</label>
+            </div>
+            <div style="margin-top:15px; text-align:right;">
+                <button type="button" onclick="document.getElementById('save-preset-modal').style.display='none'" class="btn btn-secondary">Abbrechen</button>
+                <button type="submit" class="btn btn-primary">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .statistics-dashboard .panel { margin-bottom: 25px; background: white; padding: 20px; border: 1px solid #eee; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .statistics-dashboard .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .statistics-dashboard .stats-grid h4 { margin-bottom: 10px; font-size: 1rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .statistics-dashboard ul { list-style: none; padding: 0; }
+    .statistics-dashboard li { padding: 3px 0; border-bottom: 1px dotted #fafafa; }
+</style>
+{% endblock %}

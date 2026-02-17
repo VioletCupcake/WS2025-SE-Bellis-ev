@@ -11,11 +11,19 @@ from .reference_models import (
     Fall_FolgenDerGewalt
 )
 from .survey_models import CaseSurveyQuestion, CaseSurveyAnswer
+from .statistik_models import StatistikPreset
 
 __all__ = [
-    'User', 'Role', 'PermissionSet', 'Session',
-    'Fall', 'PersonenbezogeneDaten', 'Beratung', 'Gewalttat', 'Anfrage',
-    'GewalttatArt', 'FolgenDerGewalt',
-    'Gewalttat_GewalttatArt', 'Fall_FolgenDerGewalt',
-    'CaseSurveyQuestion', 'CaseSurveyAnswer',
+    'Fall',
+    'Person',
+    'Beratung',
+    'Gewalttat',
+    'Folge',
+    'Anfrage',
+    'Dokument',
+    'User',
+    'Reference_Code',
+    'SurveyQuestion',
+    'SurveyResponse',
+    'StatistikPreset',
 ]

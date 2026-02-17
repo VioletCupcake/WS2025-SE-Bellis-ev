@@ -4,6 +4,7 @@ All paths are prefixed with /api/ (configured in B_EV/urls.py).
 """
 from django.urls import path
 from . import views
+from . import statistics_views
 
 urlpatterns = [
     # Fall (Case)
@@ -21,4 +22,13 @@ urlpatterns = [
 
     # Anfrage (Inquiry)
     path('anfragen/', views.AnfrageCreateView.as_view(), name='api-anfrage-create'),
+
+    # ===== STATISTICS =====
+    path('stats/meta/', statistics_views.StatisticsMetaView.as_view(), name='api-stats-meta'),
+    path('stats/compute/', statistics_views.StatisticsComputeView.as_view(), name='api-stats-compute'),
+    path('stats/export/<str:export_format>/', statistics_views.StatisticsExportView.as_view(), name='api-stats-export'),
+
+    # Presets
+    path('stats/presets/', statistics_views.StatsPresetListCreateView.as_view(), name='api-stats-presets'),
+    path('stats/presets/<uuid:preset_id>/', statistics_views.StatsPresetDetailView.as_view(), name='api-stats-preset-detail'),
 ]

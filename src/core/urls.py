@@ -7,7 +7,7 @@ Uses Django's built-in auth views for login/logout.
 
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from core.views import fall_views, beratung_views, gewalttat_views, folgen_views, anfrage_views, survey_views
+from core.views import fall_views, beratung_views, gewalttat_views, folgen_views, anfrage_views, survey_views, statistik_views
 
 app_name = 'core'
 
@@ -58,4 +58,10 @@ urlpatterns = [
     path('survey/questions/', survey_views.survey_questions, name='survey_questions'),
     path('survey/questions/<uuid:question_id>/delete/', survey_views.survey_question_delete, name='survey_question_delete'),
     path('cases/<uuid:fall_id>/survey/save/', survey_views.survey_answers_save, name='survey_answers_save'),
+
+    # ===== STATISTICS =====
+    path('statistik/', statistik_views.statistics_ui, name='statistics_ui'),
+    path('statistik/export/<str:format_type>/', statistik_views.statistics_export, name='statistics_export'),
+    path('statistik/preset/save/', statistik_views.preset_save, name='preset_save'),
+    path('statistik/preset/<uuid:preset_id>/delete/', statistik_views.preset_delete, name='preset_delete'),
 ]
