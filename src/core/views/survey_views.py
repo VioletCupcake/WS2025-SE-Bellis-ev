@@ -95,6 +95,6 @@ def survey_answers_save(request, fall_id):
                     question=question
                 ).delete()
 
-        messages.success(request, 'Erhebungsbogen gespeichert.')
+        messages.success(request, 'Zusätzliche Angaben gespeichert.')
 
     return redirect('core:case_detail', fall_id=fall_id)

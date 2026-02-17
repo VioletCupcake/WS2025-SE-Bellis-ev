@@ -266,7 +266,8 @@
 
                 <p style="margin: 5px 0;">
                     <strong>Zahl der Vorfälle:</strong>
-                    {% if gewalttat.zahl_der_vorfaelle == 'GENAUE_ZAHL' and gewalttat.zahl_der_vorfaelle_genau is not None %}
+                    {% if gewalttat.zahl_der_vorfaelle == 'GENAUE_ZAHL' and gewalttat.zahl_der_vorfaelle_genau is not
+                    None %}
                     {{ gewalttat.zahl_der_vorfaelle_genau }}
                     {% else %}
                     {{ gewalttat.get_zahl_der_vorfaelle_display|default:"-" }}
@@ -279,7 +280,8 @@
 
                 <p style="margin: 5px 0;">
                     <strong>Anzahl Täter*innen:</strong>
-                    {% if gewalttat.anzahl_taeterinnen == 'GENAUE_ZAHL' and gewalttat.anzahl_taeterinnen_genau is not None %}
+                    {% if gewalttat.anzahl_taeterinnen == 'GENAUE_ZAHL' and gewalttat.anzahl_taeterinnen_genau is not
+                    None %}
                     {{ gewalttat.anzahl_taeterinnen_genau }}
                     {% else %}
                     {{ gewalttat.get_anzahl_taeterinnen_display|default:"-" }}
@@ -405,10 +407,10 @@
     {% endif %}
 </div>
 
-<!-- Erhebungsbogen (Survey) -->
+<!-- Zusätzliche Angaben (Survey) -->
 <div class="mb-3" style="margin-bottom: 30px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="margin: 0;">Erhebungsbogen</h2>
+        <h2 style="margin: 0;">Zusätzliche Angaben</h2>
         {% if user.role.permissions.can_edit_cases %}
         <a href="{% url 'core:survey_questions' %}" class="btn btn-secondary"
             style="padding: 5px 10px; font-size: 0.85rem;">Fragen verwalten</a>
@@ -425,13 +427,13 @@
             </th>
             <td>
                 {% if q.current_answer %}
-                    {% if q.field_type == 'boolean' %}
-                        {% if q.current_answer == 'true' %}Ja{% else %}Nein{% endif %}
-                    {% else %}
-                        {{ q.current_answer }}
-                    {% endif %}
+                {% if q.field_type == 'boolean' %}
+                {% if q.current_answer == 'true' %}Ja{% else %}Nein{% endif %}
                 {% else %}
-                    <span class="text-muted">-</span>
+                {{ q.current_answer }}
+                {% endif %}
+                {% else %}
+                <span class="text-muted">-</span>
                 {% endif %}
             </td>
         </tr>

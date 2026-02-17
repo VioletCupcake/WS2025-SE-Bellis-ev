@@ -16,13 +16,13 @@
     <div class="form-group">
         <label for="id_zustaendige_beratungsstelle">Zuständige Beratungsstelle</label>
         <select name="zustaendige_beratungsstelle" id="id_zustaendige_beratungsstelle" class="form-control">
-            <option value="FBS_1_LE" {% if fall.zustaendige_beratungsstelle == 'FBS_1_LE' %}selected{% endif %}>
+            <option value="FBS_1_LE" {% if fall.zustaendige_beratungsstelle=='FBS_1_LE' %}selected{% endif %}>
                 Fachberatungsstelle für queere Betroffene von sexualisierter Gewalt in der Stadt Leipzig
             </option>
-            <option value="FBS_2_LKNSA" {% if fall.zustaendige_beratungsstelle == 'FBS_2_LKNSA' %}selected{% endif %}>
+            <option value="FBS_2_LKNSA" {% if fall.zustaendige_beratungsstelle=='FBS_2_LKNSA' %}selected{% endif %}>
                 Fachberatung gegen sexualisierte Gewalt im Landkreis Nordsachsen
             </option>
-            <option value="FBS_3_LKLE" {% if fall.zustaendige_beratungsstelle == 'FBS_3_LKLE' %}selected{% endif %}>
+            <option value="FBS_3_LKLE" {% if fall.zustaendige_beratungsstelle=='FBS_3_LKLE' %}selected{% endif %}>
                 Fachberatung gegen sexualisierte Gewalt im Landkreis Leipzig
             </option>
         </select>
@@ -32,31 +32,31 @@
         <label for="id_informationsquelle">Wie hat die Person von der Beratungsstelle erfahren?</label>
         <select name="informationsquelle" id="id_informationsquelle" class="form-control">
             <option value="">---------</option>
-            <option value="POLIZEI" {% if fall.informationsquelle == 'POLIZEI' %}selected{% endif %}>
+            <option value="POLIZEI" {% if fall.informationsquelle=='POLIZEI' %}selected{% endif %}>
                 Selbstmeldungen über Polizei
             </option>
-            <option value="KONTAKTE" {% if fall.informationsquelle == 'KONTAKTE' %}selected{% endif %}>
+            <option value="KONTAKTE" {% if fall.informationsquelle=='KONTAKTE' %}selected{% endif %}>
                 Private Kontakte
             </option>
-            <option value="BERATUNGSSTELLEN" {% if fall.informationsquelle == 'BERATUNGSSTELLEN' %}selected{% endif %}>
+            <option value="BERATUNGSSTELLEN" {% if fall.informationsquelle=='BERATUNGSSTELLEN' %}selected{% endif %}>
                 Beratungsstellen
             </option>
-            <option value="INTERNET" {% if fall.informationsquelle == 'INTERNET' %}selected{% endif %}>
+            <option value="INTERNET" {% if fall.informationsquelle=='INTERNET' %}selected{% endif %}>
                 Internet
             </option>
-            <option value="AEMTER" {% if fall.informationsquelle == 'AEMTER' %}selected{% endif %}>
+            <option value="AEMTER" {% if fall.informationsquelle=='AEMTER' %}selected{% endif %}>
                 Ämter
             </option>
-            <option value="GESUNDHEITSWESEN" {% if fall.informationsquelle == 'GESUNDHEITSWESEN' %}selected{% endif %}>
+            <option value="GESUNDHEITSWESEN" {% if fall.informationsquelle=='GESUNDHEITSWESEN' %}selected{% endif %}>
                 Gesundheitswesen (Arzt/Ärztin)
             </option>
-            <option value="RECHTSANWAELTE" {% if fall.informationsquelle == 'RECHTSANWAELTE' %}selected{% endif %}>
+            <option value="RECHTSANWAELTE" {% if fall.informationsquelle=='RECHTSANWAELTE' %}selected{% endif %}>
                 Rechtsanwälte/Rechtsanwältinnen
             </option>
-            <option value="ANDERE" {% if fall.informationsquelle == 'ANDERE' %}selected{% endif %}>
+            <option value="ANDERE" {% if fall.informationsquelle=='ANDERE' %}selected{% endif %}>
                 andere Quelle
             </option>
-            <option value="KEINE_ANGABE" {% if fall.informationsquelle == 'KEINE_ANGABE' %}selected{% endif %}>
+            <option value="KEINE_ANGABE" {% if fall.informationsquelle=='KEINE_ANGABE' %}selected{% endif %}>
                 keine Angabe
             </option>
         </select>
@@ -90,7 +90,7 @@
     </div>
     {% if survey_questions %}
     <hr style="margin: 20px 0;">
-    <h2>Erhebungsbogen</h2>
+    <h2>Zusätzliche Angaben</h2>
     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px;">
         {% for q in survey_questions %}
         <div class="form-group">
@@ -102,8 +102,8 @@
             {% if q.field_type == 'boolean' %}
             <select id="question_{{ q.question_id }}" name="question_{{ q.question_id }}">
                 <option value="">– Bitte wählen –</option>
-                <option value="true" {% if q.current_answer == 'true' %}selected{% endif %}>Ja</option>
-                <option value="false" {% if q.current_answer == 'false' %}selected{% endif %}>Nein</option>
+                <option value="true" {% if q.current_answer=='true' %}selected{% endif %}>Ja</option>
+                <option value="false" {% if q.current_answer=='false' %}selected{% endif %}>Nein</option>
             </select>
             {% elif q.field_type == 'date' %}
             <input type="date" id="question_{{ q.question_id }}" name="question_{{ q.question_id }}"

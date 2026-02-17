@@ -1,14 +1,15 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Erhebungsbogen - Fragen verwalten - B-EV{% endblock %}
+{% block title %}Zusätzliche Angaben - Fragen verwalten - B-EV{% endblock %}
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h1>Erhebungsbogen – Fragen verwalten</h1>
+    <h1>Zusätzliche Angaben – Fragen verwalten</h1>
 </div>
 
 <!-- Create new question -->
-<div style="background-color: #e8f5e9; padding: 20px; border-radius: 4px; margin-bottom: 30px; border-left: 4px solid #28a745;">
+<div
+    style="background-color: #e8f5e9; padding: 20px; border-radius: 4px; margin-bottom: 30px; border-left: 4px solid #28a745;">
     <h2 style="margin-top: 0;">Neue Frage erstellen</h2>
     <form method="post">
         {% csrf_token %}
@@ -25,7 +26,7 @@
                 <label for="field_type">Typ</label>
                 <select id="field_type" name="field_type">
                     {% for value, display in field_type_choices %}
-                        <option value="{{ value }}">{{ display }}</option>
+                    <option value="{{ value }}">{{ display }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -61,14 +62,15 @@
             <td>{{ q.get_field_type_display }}</td>
             <td>
                 {% if q.required %}
-                    <span style="color: #28a745; font-weight: bold;">Ja</span>
+                <span style="color: #28a745; font-weight: bold;">Ja</span>
                 {% else %}
-                    <span style="color: #6c757d;">Nein</span>
+                <span style="color: #6c757d;">Nein</span>
                 {% endif %}
             </td>
             <td>
                 {% if user.role.permissions.can_delete_cases %}
-                    <a href="{% url 'core:survey_question_delete' q.question_id %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.85rem;">Löschen</a>
+                <a href="{% url 'core:survey_question_delete' q.question_id %}" class="btn btn-danger"
+                    style="padding: 5px 10px; font-size: 0.85rem;">Löschen</a>
                 {% endif %}
             </td>
         </tr>

@@ -273,7 +273,7 @@
                 <li><a href="{% url 'core:anfrage_list' %}">Anfragen</a></li>
                 {% if user.role.permissions.can_edit_cases %}
                 <li><a href="{% url 'core:case_create' %}">Neuer Fall</a></li>
-                <li><a href="{% url 'core:survey_questions' %}">Erhebungsbogen</a></li>
+                <li><a href="{% url 'core:survey_questions' %}">Zusätzliche Angaben</a></li>
                 {% endif %}
                 <li class="user-info">
                     {{ user.username }} ({{ user.role.name }})
