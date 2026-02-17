@@ -270,6 +270,7 @@
             <ul>
                 {% if user.is_authenticated %}
                 <li><a href="{% url 'core:case_list' %}">Fälle</a></li>
+                <li><a href="{% url 'core:anfrage_list' %}">Anfragen</a></li>
                 {% if user.role.permissions.can_edit_cases %}
                 <li><a href="{% url 'core:case_create' %}">Neuer Fall</a></li>
                 <li><a href="{% url 'core:survey_questions' %}">Erhebungsbogen</a></li>
