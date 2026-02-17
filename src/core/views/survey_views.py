@@ -13,7 +13,7 @@ from core.decorators import permission_required_custom
 
 
 @login_required
-@permission_required_custom('can_edit_cases')
+@permission_required_custom('can_manage_reference_data')
 def survey_questions(request):
     """
     List all survey questions and handle creation of new ones.

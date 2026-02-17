@@ -411,7 +411,7 @@
 <div class="mb-3" style="margin-bottom: 30px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="margin: 0;">Zusätzliche Angaben</h2>
-        {% if user.role.permissions.can_edit_cases %}
+        {% if user.role.permissions.can_manage_reference_data %}
         <a href="{% url 'core:survey_questions' %}" class="btn btn-secondary"
             style="padding: 5px 10px; font-size: 0.85rem;">Fragen verwalten</a>
         {% endif %}

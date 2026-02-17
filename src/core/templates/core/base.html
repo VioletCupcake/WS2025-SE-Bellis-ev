@@ -273,6 +273,8 @@
                 <li><a href="{% url 'core:anfrage_list' %}">Anfragen</a></li>
                 {% if user.role.permissions.can_edit_cases %}
                 <li><a href="{% url 'core:case_create' %}">Neuer Fall</a></li>
+                {% endif %}
+                {% if user.role.permissions.can_manage_reference_data %}
                 <li><a href="{% url 'core:survey_questions' %}">Zusätzliche Angaben</a></li>
                 {% endif %}
                 <li class="user-info">
