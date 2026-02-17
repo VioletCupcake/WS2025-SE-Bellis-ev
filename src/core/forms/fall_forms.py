@@ -133,13 +133,13 @@ class FallCreateForm(forms.Form):
     )
     
     schwerbehinderung = forms.ChoiceField(
-        choices=PersonenbezogeneDaten.SCHWERBEHINDERUNG_CHOICES,
+        choices=[('', '--- Bitte wählen ---')] + list(PersonenbezogeneDaten.SCHWERBEHINDERUNG_CHOICES),
         label="Liegt eine Schwerbehinderung vor?",
         required=False
     )
     
     form_der_behinderung = forms.ChoiceField(
-        choices=PersonenbezogeneDaten.BEHINDERUNG_CHOICES,
+        choices=[('', '--- Bitte wählen ---')] + list(PersonenbezogeneDaten.BEHINDERUNG_CHOICES),
         label="Form der Behinderung",
         required=False
     )
