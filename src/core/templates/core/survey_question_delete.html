@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Frage löschen - B-EV{% endblock %}
+
+{% block content %}
+<h1>Frage löschen</h1>
+
+<div
+    style="background-color: #f8d7da; padding: 20px; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+    <h2 style="margin-top: 0; color: #721c24;">⚠️ Bestätigung erforderlich</h2>
+    <p style="margin-bottom: 0; color: #721c24;">
+        Möchten Sie die Frage <strong>"{{ question.label }}"</strong> wirklich löschen?
+        <br>Alle zugehörigen Antworten werden ebenfalls gelöscht.
+    </p>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+    <table style="margin-top: 0;">
+        <tr>
+            <th style="width: 30%;">Name</th>
+            <td><code>{{ question.name }}</code></td>
+        </tr>
+        <tr>
+            <th>Label</th>
+            <td>{{ question.label }}</td>
+        </tr>
+        <tr>
+            <th>Typ</th>
+            <td>{{ question.get_field_type_display }}</td>
+        </tr>
+        <tr>
+            <th>Pflichtfeld</th>
+            <td>{% if question.required %}Ja{% else %}Nein{% endif %}</td>
+        </tr>
+    </table>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Frage löschen</button>
+        <a href="{% url 'core:survey_questions' %}" class="btn btn-secondary">Abbrechen</a>
+    </div>
+</form>
+{% endblock %}

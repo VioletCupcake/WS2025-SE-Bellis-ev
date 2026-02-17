@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 
-from core.models import Fall, PersonenbezogeneDaten
+from core.models import Fall, PersonenbezogeneDaten, CaseSurveyQuestion, CaseSurveyAnswer
 from core.forms import FallCreateForm
 from core.services.fall_manager import FallManager
 from core.decorators import permission_required_custom
@@ -115,6 +115,14 @@ def case_detail(request, fall_id):
         'gewalttaten': fall.gewalttaten.all(), # type: ignore
         'folgen_relations': fall.folgen_relations.all().select_related('folge').order_by('folge__kategorie', 'folge__name'), # type: ignore
     }
+    
+    # Load survey questions with current answers for this case
+    questions = CaseSurveyQuestion.objects.all()
+    answers = {a.question_id: a.value for a in CaseSurveyAnswer.objects.filter(case=fall)}
+    for q in questions:
+        q.current_answer = answers.get(q.question_id, '')
+    context['survey_questions'] = questions
+    
     return render(request, 'core/case_detail.html', context)
 
 

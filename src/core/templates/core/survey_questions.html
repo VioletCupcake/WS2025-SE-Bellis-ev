@@ -1,0 +1,83 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Erhebungsbogen - Fragen verwalten - B-EV{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Erhebungsbogen – Fragen verwalten</h1>
+</div>
+
+<!-- Create new question -->
+<div style="background-color: #e8f5e9; padding: 20px; border-radius: 4px; margin-bottom: 30px; border-left: 4px solid #28a745;">
+    <h2 style="margin-top: 0;">Neue Frage erstellen</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+            <div class="form-group" style="flex: 1; min-width: 150px;">
+                <label for="name">Technischer Name</label>
+                <input type="text" id="name" name="name" placeholder="z.B. kontaktweg" required>
+            </div>
+            <div class="form-group" style="flex: 2; min-width: 200px;">
+                <label for="label">Anzeigename (Label)</label>
+                <input type="text" id="label" name="label" placeholder="z.B. Wie wurde Kontakt aufgenommen?" required>
+            </div>
+            <div class="form-group" style="min-width: 140px;">
+                <label for="field_type">Typ</label>
+                <select id="field_type" name="field_type">
+                    {% for value, display in field_type_choices %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="min-width: 100px;">
+                <label>
+                    <input type="checkbox" name="required"> Pflichtfeld
+                </label>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-success">+ Erstellen</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Questions table -->
+{% if questions %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Label</th>
+            <th>Typ</th>
+            <th>Pflicht</th>
+            <th>Aktionen</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for q in questions %}
+        <tr>
+            <td><code>{{ q.name }}</code></td>
+            <td>{{ q.label }}</td>
+            <td>{{ q.get_field_type_display }}</td>
+            <td>
+                {% if q.required %}
+                    <span style="color: #28a745; font-weight: bold;">Ja</span>
+                {% else %}
+                    <span style="color: #6c757d;">Nein</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if user.role.permissions.can_delete_cases %}
+                    <a href="{% url 'core:survey_question_delete' q.question_id %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.85rem;">Löschen</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="text-align: center; color: #6c757d; padding: 40px; font-style: italic;">
+    Noch keine Fragen erstellt. Nutzen Sie das Formular oben, um Fragen hinzuzufügen.
+</p>
+{% endif %}
+{% endblock %}

@@ -9,6 +9,7 @@ from . import beratung_views
 from . import gewalttat_views
 from . import folgen_views
 from . import anfrage_views
+from . import survey_views
 
 __all__ = [
     'fall_views',
@@ -16,5 +17,6 @@ __all__ = [
     'gewalttat_views',
     'folgen_views',
     'anfrage_views',
+    'survey_views',
 ]
 
