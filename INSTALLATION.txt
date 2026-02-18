@@ -81,3 +81,40 @@ docker compose up --build
 
 
 That's it. Questions? See README.md in the repo for details.
+
+
+FRONTEND DEVELOPMENT GUIDE (Quasar + Django)
+============================================
+
+The project now includes a Vue.js/Quasar frontend integrated with the Django backend.
+
+Setup for Developers:
+---------------------
+
+1. **Checkout the Branch**:
+   git checkout feature/frontend-integration
+
+2. **Frontend Setup**:
+   cd frontend
+   npm install
+   npm run build
+   cd ..
+
+   (You must run `npm run build` whenever you change frontend code!)
+
+3. **Backend Setup**:
+   # If using venv:
+   python -m venv venv
+   ./venv/Scripts/Activate
+   pip install -r requirements.txt
+   python src/manage.py migrate
+   python src/manage.py runserver
+
+4. **Access**:
+   - Web App: http://localhost:8000/
+   - API: http://localhost:8000/api/
+   - Admin: http://localhost:8000/admin/
+
+If you see a white screen, try a hard refresh (Ctrl+F5).
+If you change frontend code, rebuild with `npm run build` in the `frontend` folder.
+
