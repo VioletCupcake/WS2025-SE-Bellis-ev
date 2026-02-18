@@ -15,11 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include  # ← Add include
+from django.urls import path, include, re_path
+from django.views.generic import TemplateView
+from django.views.static import serve
+from django.conf import settings
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # ← Template views
     path('api/', include('core.api.urls')),  # ← REST API for frontend
+    re_path(r'^assets/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR.parent / 'frontend/dist/spa/assets'}),
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]

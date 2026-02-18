@@ -1,0 +1,89 @@
+﻿
+> bellis-frontend@0.0.1 build
+> quasar build
+
+
+ .d88888b.
+d88P" "Y88b
+888     888
+888     888 888  888  8888b.  .d8888b   8888b.  888d888
+888     888 888  888     "88b 88K          "88b 888P"
+888 Y8b 888 888  888 .d888888 "Y8888b. .d888888 888
+Y88b.Y8b88P Y88b 888 888  888      X88 888  888 888
+ "Y888888"   "Y88888 "Y888888  88888P' "Y888888 888
+       Y8b
+
+
+ Build mode............. spa
+ Pkg quasar............. v2.18.6
+ Pkg @quasar/app-vite... v2.4.0
+ Pkg vite............... v7.3.1
+ Debugging.............. no
+ Publishing............. no
+
+ App ÔÇó Using quasar.config.js in "esm" format
+ App ÔÇó  WAIT  ÔÇó Compiling of SPA UI with Vite in progress...
+ App ÔÇó  DONE  ÔÇó SPA UI compiled with success by Vite ÔÇó 1357ms
+
+ Build summary with important files:
+ ÔòöÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòªÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòªÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòù
+ Ôòæ                                        Asset Ôòæ         Size Ôòæ      Gzipped Ôòæ
+ ÔòƒÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔò½ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔò½ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔòó
+ Ôòæ         assets/AnfrageCreatePage-DQdD3n70.js Ôòæ      5.50 KB Ôòæ      1.77 KB Ôòæ
+ Ôòæ                       assets/api-sD4sDpz6.js Ôòæ      0.15 KB Ôòæ      0.15 KB Ôòæ
+ Ôòæ        assets/BeratungCreatePage-CaBUpQs-.js Ôòæ      4.29 KB Ôòæ      1.73 KB Ôòæ
+ Ôòæ            assets/FallCreatePage-B7MG4b5w.js Ôòæ     17.23 KB Ôòæ      4.89 KB Ôòæ
+ Ôòæ              assets/FallEditPage-00qc-0r0.js Ôòæ      3.41 KB Ôòæ      1.41 KB Ôòæ
+ Ôòæ       assets/FallFolgeCreatePage-BNBhgV-c.js Ôòæ      3.36 KB Ôòæ      1.45 KB Ôòæ
+ Ôòæ      assets/FallGewaltCreatePage-DIkd8Q2r.js Ôòæ      6.32 KB Ôòæ      2.02 KB Ôòæ
+ Ôòæ              assets/FallListPage-CR6bxKFB.js Ôòæ     26.85 KB Ôòæ      9.24 KB Ôòæ
+ Ôòæ                    assets/format-BTIfSw7E.js Ôòæ     11.84 KB Ôòæ      4.47 KB Ôòæ
+ Ôòæ                     assets/index-C0Zqfgkc.js Ôòæ     35.76 KB Ôòæ     14.38 KB Ôòæ
+ Ôòæ                     assets/index-zQ8RAr0l.js Ôòæ    117.42 KB Ôòæ     45.15 KB Ôòæ
+ Ôòæ                 assets/IndexPage-TI5SdIYx.js Ôòæ      2.98 KB Ôòæ      0.92 KB Ôòæ
+ Ôòæ                assets/MainLayout-DF_-u18X.js Ôòæ     20.31 KB Ôòæ      7.21 KB Ôòæ
+ Ôòæ                   assets/QBanner-DkyRGmCM.js Ôòæ      0.85 KB Ôòæ      0.47 KB Ôòæ
+ Ôòæ                     assets/QCard-D87fKkK3.js Ôòæ      0.54 KB Ôòæ      0.34 KB Ôòæ
+ Ôòæ              assets/QCardSection-B42pU46I.js Ôòæ      3.74 KB Ôòæ      1.64 KB Ôòæ
+ Ôòæ                     assets/QForm-CJK21L-u.js Ôòæ     14.25 KB Ôòæ      5.40 KB Ôòæ
+ Ôòæ                     assets/QList-BPtxuo6n.js Ôòæ      0.63 KB Ôòæ      0.37 KB Ôòæ
+ Ôòæ              assets/QMarkupTable-CxAbSjbS.js Ôòæ      0.83 KB Ôòæ      0.45 KB Ôòæ
+ Ôòæ                     assets/QPage-CeDa2if7.js Ôòæ      3.43 KB Ôòæ      1.56 KB Ôòæ
+ Ôòæ                   assets/QSelect-BDeYkAgn.js Ôòæ     73.67 KB Ôòæ     24.18 KB Ôòæ
+ Ôòæ                assets/QSeparator-B4LwslDJ.js Ôòæ      0.99 KB Ôòæ      0.56 KB Ôòæ
+ Ôòæ                   assets/QToggle-DOna8k3I.js Ôòæ      0.60 KB Ôòæ      0.38 KB Ôòæ
+ Ôòæ                  assets/use-dark-DumorZlw.js Ôòæ      0.52 KB Ôòæ      0.30 KB Ôòæ
+ Ôòæ                assets/use-quasar-Bj9NhbgQ.js Ôòæ      0.08 KB Ôòæ      0.10 KB Ôòæ
+ Ôòæ assets/_plugin-vue_export-helper-DlAUqK2U.js Ôòæ      0.09 KB Ôòæ      0.10 KB Ôòæ
+ ÔòƒÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔò½ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔò½ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔòó
+ Ôòæ                    assets/index-BQveqNql.css Ôòæ    195.42 KB Ôòæ     34.54 KB Ôòæ
+ Ôòæ                assets/IndexPage-CezWPs5q.css Ôòæ      0.11 KB Ôòæ      0.11 KB Ôòæ
+ ÔòƒÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔò½ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔò½ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔòó
+ Ôòæ                                   index.html Ôòæ      0.85 KB Ôòæ            - Ôòæ
+ ÔòáÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¼ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò¼ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòú
+ Ôòæ                          Total JS (26 files) Ôòæ    355.63 KB Ôòæ            - Ôòæ
+ Ôòæ                          Total CSS (2 files) Ôòæ    195.53 KB Ôòæ            - Ôòæ
+ ÔòÜÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò®ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔò®ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòØ
+
+ Build succeeded
+
+ Build mode............. spa
+ Pkg quasar............. v2.18.6
+ Pkg @quasar/app-vite... v2.4.0
+ Pkg vite............... v7.3.1
+ Debugging.............. no
+ Publishing............. no
+ Browser target......... es2022|firefox115|chrome115|safari14
+ =======================
+ Output folder.......... C:\Users\Jason\Desktop\WS2025-SE-Bellis-ev-backend\frontend\dist\spa
+
+ Tip: Built files are meant to be served over an HTTP server
+      Opening index.html over file:// won't work
+
+ Tip: You can use "$ quasar serve" command to create a web server,
+      both for testing or production. Type "$ quasar serve -h" for
+      parameters. Also, an npm script (usually named "start") can
+      be added for deployment environments.
+      If you're using Vue Router "history" mode, don't forget to
+      specify the "--history" parameter: "$ quasar serve --history"
+

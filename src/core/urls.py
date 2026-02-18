@@ -25,7 +25,7 @@ urlpatterns = [
     ), name='logout'),
     
     # ===== CASE MANAGEMENT =====
-    path('', fall_views.case_list, name='case_list'),
+    # path('', fall_views.case_list, name='case_list'),
     path('cases/', fall_views.case_list, name='case_list'),
     path('cases/create/', fall_views.case_create, name='case_create'),
     path('cases/<uuid:fall_id>/', fall_views.case_detail, name='case_detail'),

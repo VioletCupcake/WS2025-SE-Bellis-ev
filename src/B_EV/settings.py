@@ -75,7 +75,9 @@ ROOT_URLCONF = 'B_EV.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR.parent / 'frontend/dist/spa',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -156,6 +158,10 @@ DATETIME_INPUT_FORMATS = [
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR.parent / 'frontend/dist/spa',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
