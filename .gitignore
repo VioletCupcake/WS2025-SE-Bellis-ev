@@ -19,19 +19,6 @@ media/
 staticfiles/
 local_settings.py
 
-# Environment variables
-.env
-*.env
-.env.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*.sublime-project
-*.sublime-workspace
-
 # OS
 .DS_Store
 Thumbs.db
@@ -42,21 +29,42 @@ desktop.ini
 *.sqlite
 *.sqlite3
 
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+dist/
+
 # Secrets
+.env
+.env.*
+!.env.example
 secrets.json
 *.pem
 *.key
 *.crt
 
-# Pytest
+# Pytest / Coverage
 .pytest_cache/
 .coverage
 htmlcov/
+nosetests.xml
+coverage.xml
+*.lcov
 
-# MyPy
-.mypy_cache/
-__pycache__/
-*.pyc
-.env
-db.sqlite3
+# IDEs
 .vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Project specific junk
+server_errors.log
+branch_diff.txt
+Using Django for Export
+.FOR_THE_FRONTEND_AND_TESTERS
+backup_old_src/

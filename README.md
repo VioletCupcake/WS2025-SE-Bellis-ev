@@ -2,10 +2,6 @@
 
   <h1>B-EV Case Management System</h1>
   <p><strong>Bellis e.V. — MVP for SE2025</strong></p>
-  
-  <p>
-    DISCLAIMER: This composition was automatically generated. To be reviewed manually (09.01.2026)
-  </p>
 
 </div>
 
