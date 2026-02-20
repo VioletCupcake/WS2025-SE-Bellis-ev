@@ -121,9 +121,8 @@ class Fall_FolgenDerGewalt(models.Model):
         return f"{self.fall} - {self.folge.name}"  # type: ignore[attr-defined]
 
 
-# NOTE: Gewalttat_GewalttatArt junction table will be created in next migration
-# when Gewalttat model is implemented (Phase 1B.3)
-# NOTE: Here it is, woop woop
+# (Phase 1B.3)
+# Hierarchical categories for violence incidents
 
 class Gewalttat_GewalttatArt(models.Model):
     """

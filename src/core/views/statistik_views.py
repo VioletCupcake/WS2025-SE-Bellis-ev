@@ -90,7 +90,7 @@ def calculate_stats(qs, modules, date_from=None, date_to=None):
     # 3. Gewalttaten
     if 'gewalttat' in modules:
         g_qs = Gewalttat.objects.filter(fall__in=qs)
-        # Note: Gewalttat date filter logic could be complex (Zeitraum), here we rely on Fall filter
+        # Date filter logic relies on Fall filter
         
         stats['gewalttat'] = {
             'total': g_qs.count(),
@@ -118,13 +118,7 @@ def calculate_stats(qs, modules, date_from=None, date_to=None):
         if date_to:
             a_qs = a_qs.filter(datum_anfrage__lte=date_to)
         
-        # beratungsstelle filter for Anfragen?
-        # Anfrage has no direct 'beratungsstelle' field, but maybe 'anfrage_aus' maps somewhat?
-        # Or maybe check 'bearbeitet_von' role? 
-        # For now, we apply date filter only, as requested in spec "wie viele Beratungstermine insgesamt" etc.
-        # But user might expect filters to apply.
-        # Given matching field names are different, we'll just return general stats for now or map regions if possible.
-        # Simple approach: Return all matching date range.
+        # Date filter applied to Anfragen.
         
         stats['anfragen'] = {
             'total': a_qs.count(),
@@ -142,7 +136,7 @@ def statistics_ui(request):
     """
     Main dashboard for statistics.
     """
-    # Create default empty config
+    # 1. Start with defaults
     filter_config = {
         'date_from': '',
         'date_to': '',
@@ -150,21 +144,27 @@ def statistics_ui(request):
         'modules': ['personen', 'beratung', 'gewalttat', 'folgen', 'anfragen'] # Default all
     }
     
-    # If POST (Apply Filter), update config
+    # 2. Try to load from session for continuity
+    if 'stats_filter_config' in request.session:
+        session_config = request.session['stats_filter_config']
+        if isinstance(session_config, dict):
+            filter_config.update(session_config)
+
+    # 3. If loading preset (Explicit GET action)
+    preset_id = request.GET.get('load_preset')
+    if preset_id:
+        preset = get_object_or_404(StatistikPreset, pk=preset_id)
+        # Presets overwrite current config entirely
+        filter_config = preset.filter_config
+    
+    # 4. If applying filter (Explicit POST action)
     if request.method == 'POST':
         filter_config['date_from'] = request.POST.get('date_from', '')
         filter_config['date_to'] = request.POST.get('date_to', '')
         filter_config['beratungsstellen'] = request.POST.getlist('beratungsstellen')
         filter_config['modules'] = request.POST.getlist('modules')
-        
-    # If loading preset (GET param)
-    preset_id = request.GET.get('load_preset')
-    if preset_id:
-        preset = get_object_or_404(StatistikPreset, pk=preset_id)
-        # Check permissions? System presets or own presets
-        filter_config = preset.filter_config
     
-    # Store config in session for export
+    # Store final config in session
     request.session['stats_filter_config'] = filter_config
     
     # Calculate Results
